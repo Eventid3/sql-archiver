@@ -1,5 +1,6 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Package cmd
+Copyright © 2025 Esben Inglev <esbeninglev@gmail.com>
 */
 package cmd
 
