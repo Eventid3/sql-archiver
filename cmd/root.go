@@ -1,6 +1,6 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-
+Package cmd
+Copyright © 2025 Esben Inglev <esbeninglev@gmail.com>
 */
 package cmd
 
@@ -10,18 +10,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	container string
+	password  string
+	baseCmd   string = "/opt/mssql-tools18/bin/sqlcmd"
 
+	database string
+	file     string
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "sql-archiver",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Tool to restore and backup MSSQL databases running in docker",
+	Long: `Tool to restore and backup MSSQL databases running in docker.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	The tool assumes that you use the default port 1433 port, and is only compatible with docker.
+	Restores and backups are done with .bak files.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -43,9 +48,12 @@ func init() {
 
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sql-archiver.yaml)")
 
+	rootCmd.PersistentFlags().StringVarP(&container, "container", "c", "mssql", "Docker container name")
+	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Password for SA user")
+	rootCmd.PersistentFlags().StringVarP(&database, "database", "d", "", "Database name for restore or backup")
+	rootCmd.PersistentFlags().StringVarP(&file, "file", "f", "", "Filename to restore form or backup to")
+
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-
-
