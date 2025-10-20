@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var outputDB string
+
 // restoreCmd represents the restore command
 var restoreCmd = &cobra.Command{
 	Use:   "restore",
@@ -33,7 +35,24 @@ var restoreCmd = &cobra.Command{
 			return fmt.Errorf("database name must be provoded. Use the -d flag to set the database name")
 		}
 
-		query := fmt.Sprintf("RESTORE DATABASE [%s] FROM DISK = N'/var/opt/mssql/backup/%s' WITH REPLACE", database, file)
+		moveCmd := ""
+		if outputDB != database {
+			fmt.Printf("Restoring %s into new database %s...\n", database, outputDB)
+			moveCmd = fmt.Sprintf(`
+			WITH 
+				MOVE %s TO /var/opt/mssql/data/%s.mdf,
+				MOVE %s_log TO /var/opt/mssql/data/%s_log.ldf
+			REPLACE;
+			`, database, outputDB, database, outputDB)
+		}
+
+		query := fmt.Sprintf(
+			`RESTORE DATABASE [%s] 
+			FROM DISK = N'/var/opt/mssql/backup/%s'
+			
+			`+moveCmd,
+			database, file,
+		)
 
 		dockerCmd := exec.Command(
 			"docker", "exec", "-i", container,
@@ -51,12 +70,12 @@ var restoreCmd = &cobra.Command{
 		}
 
 		fmt.Printf("✓ Database '%s' restored successfully from %s\n", database, file)
-		fmt.Print(string(output))
-
 		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(restoreCmd)
+
+	restoreCmd.Flags().StringVarP(&outputDB, "outputDB", "o", database, "Write a custom name for the output database")
 }

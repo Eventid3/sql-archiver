@@ -43,7 +43,7 @@ var backupCmd = &cobra.Command{
 			file = file[:len(file)-4] + "_" + timeString + ".bak"
 		}
 
-		query := fmt.Sprintf("BACKUP DATABASE [%s] TO DISK = N'/var/opt/mssql/backup/%s' WITH STATS = 10", database, file)
+		query := fmt.Sprintf("BACKUP DATABASE [%s] TO DISK = N'/var/opt/mssql/backup/%s'", database, file)
 
 		dockerCmd := exec.Command(
 			"docker", "exec", "-i", container,
@@ -61,8 +61,6 @@ var backupCmd = &cobra.Command{
 		}
 
 		fmt.Printf("✓ Database '%s' backed up successfully to %s\n", database, file)
-		fmt.Print(string(output))
-
 		return nil
 	},
 }
