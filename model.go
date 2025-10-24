@@ -1,119 +1,194 @@
 package main
 
 import (
-	"github.com/Eventid3/sql-archiver/steps"
+	"fmt"
+
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type step int
 
 const (
-	stepConnection step = iota
-	stepSelectBackupFile
-	stepShowDatabases
-	stepRestoreOptions
+	stepWelcome step = iota
+	stepForm
 	stepConfirm
-	stepExecuting
 )
 
 type model struct {
-	state         step
-	width, height int
+	state   step
+	welcome welcomeModel
+	form    formModel
+	confirm confirmModel
 
-	// Step models
-	connection steps.ConnectionModel
-	filePicker steps.FilePickerModel
-	// dbList        *steps.DatabaseListModel
-	// restoreOpts   steps.RestoreOptionsModel
-	// confirm       steps.ConfirmModel
-	// executing     steps.ExecutingModel
-
-	// Shared data
-	selectedFile string
-	databases    []string
-	serverConfig ServerConfig
-	err          error
-}
-
-type ServerConfig struct {
-	Host     string
-	Username string
-	Password string
+	formData string
 }
 
 func InitialModel() model {
 	return model{
-		state:      stepConnection,
-		connection: steps.NewConnectionModel(),
+		state:   0,
+		welcome: NewWelcomeModel(),
 	}
 }
 
+type nextStepMsg struct{}
+
+type formDoneMsg struct {
+	data string
+}
+
 func (m model) Init() tea.Cmd {
-	return m.connection.Init()
+	m.welcome = NewWelcomeModel()
+	return m.welcome.Init()
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-
+	case nextStepMsg:
+		m.state++
+		if m.state == stepForm {
+			m.form = NewFormModel()
+		}
+		return m, m.form.Init()
+	case formDoneMsg:
+		m.state++
+		m.formData = msg.data
+		m.confirm = NewConfirmModel(m.formData)
 	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
+		if msg.String() == "ctrl+c" || msg.String() == "esc" {
 			return m, tea.Quit
 		}
 	}
 
-	// Handle state transitions and delegate to current step
-	return m.handleStateUpdate(msg)
+	switch m.state {
+	case stepWelcome:
+		newWelcome, cmd := m.welcome.Update(msg)
+		m.welcome = newWelcome.(welcomeModel)
+		return m, cmd
+	case stepForm:
+		newForm, cmd := m.form.Update(msg)
+		m.form = newForm.(formModel)
+		return m, cmd
+	case stepConfirm:
+		newConfirm, cmd := m.confirm.Update(msg)
+		m.confirm = newConfirm.(confirmModel)
+		return m, cmd
+	}
+	return m, nil
 }
 
 func (m model) View() string {
 	switch m.state {
-	case stepConnection:
-		return m.connection.View()
-		// case stepSelectBackupFile:
-		//     return m.filePicker.View()
-		// case stepShowDatabases:
-		//     if m.dbList != nil {
-		//         return m.dbList.View()
-		//     }
-		//     return "Loading databases..."
-		// ... other cases
+	case stepWelcome:
+		return m.welcome.View()
+	case stepForm:
+		return m.form.View()
+	case stepConfirm:
+		return m.confirm.View()
 	}
 	return ""
 }
 
-// handleStateUpdate manages step transitions
-func (m model) handleStateUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
+// ------ WELCOME MODEL --------
+type welcomeModel struct {
+	welcomeMsg string
+}
+
+func NewWelcomeModel() welcomeModel {
+	return welcomeModel{"Welcome!"}
+}
+
+// Init implements tea.Model.
+func (vm welcomeModel) Init() tea.Cmd {
+	return nil
+}
+
+func (vm welcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case ConnectionEstablishedMsg:
-		m.serverConfig = msg.Config
-		m.state = stepSelectBackupFile
-		m.filePicker = steps.NewFilePickerModel()
-		return m, m.filePicker.Init()
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "enter":
+			return vm, func() tea.Msg { return nextStepMsg{} }
+		}
+	}
+	return vm, nil
+}
 
-		// case FileSelectedMsg:
-		//     m.selectedFile = msg.Path
-		//     m.state = stepShowDatabases
-		//     m.dbList = steps.NewDatabaseListModel()
-		//     return m, readDatabasesCmd(msg.Path)
+// View implements tea.Model.
+func (vm welcomeModel) View() string {
+	return "Welcome to the application!\n\nPress Enter to continue."
+}
 
-		// ... other transitions
+// -------- FORM MODEL --------------
+type formModel struct {
+	input textinput.Model
+}
+
+func NewFormModel() formModel {
+	input := textinput.New()
+	input.Placeholder = "Type something..."
+	input.Focus()
+	return formModel{input}
+}
+
+// Init implements tea.Model.
+func (fm formModel) Init() tea.Cmd {
+	return textinput.Blink
+}
+
+func (fm formModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "enter":
+			return fm, func() tea.Msg { return formDoneMsg{fm.input.Value()} }
+		}
 	}
 
-	// Delegate to current step
-	switch m.state {
-	case stepConnection:
-		newModel, cmd := m.connection.Update(msg)
-		m.connection = newModel
-		return m, cmd
-		// case stepSelectBackupFile:
-		// 	newModel, cmd := m.filePicker.Update(msg)
-		// 	m.filePicker = newModel
-		// 	return m, cmd
-		// ... other delegations
-	}
+	fm.input, cmd = fm.input.Update(msg)
+	return fm, cmd
+}
 
-	return m, nil
+// View implements tea.Model.
+func (fm formModel) View() string {
+	return fmt.Sprintf(
+		"Fill the form below:\n\n%s\n\n%s",
+		fm.input.View(),
+		"Enter to submit, Esc or ctrl+q to quit.",
+	)
+}
+
+// ----------- CONFIRM MODEL -------------
+type confirmModel struct {
+	data string
+}
+
+func NewConfirmModel(msg string) confirmModel {
+	return confirmModel{msg}
+}
+
+// Init implements tea.Model.
+func (cm confirmModel) Init() tea.Cmd {
+	return nil
+}
+
+func (cm confirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch masg := msg.(type) {
+	case tea.KeyMsg:
+		switch masg.String() {
+		case "enter":
+			return cm, tea.Quit
+		}
+	}
+	return cm, nil
+}
+
+// View implements tea.Model.
+func (cm confirmModel) View() string {
+	return fmt.Sprintf(
+		"You entered %s!\n\n",
+		cm.data,
+	)
 }
