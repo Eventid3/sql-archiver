@@ -1,4 +1,4 @@
-package main
+package interactive
 
 import (
 	"fmt"
@@ -16,17 +16,21 @@ type formModel struct {
 func NewFormModel() formModel {
 	m := formModel{
 		focusIndex: 0,
-		inputs:     make([]textinput.Model, 2),
+		inputs:     make([]textinput.Model, 3),
 	}
 	m.inputs[0] = textinput.New()
-	m.inputs[0].Placeholder = "sa"
+	m.inputs[0].Placeholder = "container"
 	m.inputs[0].Width = 50
 	m.inputs[0].Focus()
 
 	m.inputs[1] = textinput.New()
-	m.inputs[1].Placeholder = "password"
+	m.inputs[1].Placeholder = "sa"
 	m.inputs[1].Width = 50
-	m.inputs[1].EchoMode = textinput.EchoPassword
+
+	m.inputs[2] = textinput.New()
+	m.inputs[2].Placeholder = "password"
+	m.inputs[2].Width = 50
+	m.inputs[2].EchoMode = textinput.EchoPassword
 
 	return m
 }
@@ -49,7 +53,13 @@ func (m formModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			// check for enter on last input
 			if s == "enter" && m.focusIndex == len(m.inputs)-1 {
-				return m, func() tea.Msg { return formDoneMsg{user: m.inputs[0].Value(), password: m.inputs[1].Value()} }
+				return m, func() tea.Msg {
+					return loginDoneMsg{
+						container: m.inputs[0].Value(),
+						user:      m.inputs[1].Value(),
+						password:  m.inputs[2].Value(),
+					}
+				}
 			}
 
 			// Cycle indexes
@@ -108,6 +118,7 @@ func (m formModel) View() string {
 	return fmt.Sprintf(
 		`Fill the form below:
 
+Container: %s
 User:     %s
 Password: %s
 
@@ -115,5 +126,6 @@ Enter to submit, Esc or ctrl+q to quit.`,
 
 		m.inputs[0].View(),
 		m.inputs[1].View(),
+		m.inputs[2].View(),
 	)
 }

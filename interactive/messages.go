@@ -1,10 +1,11 @@
-package main
+package interactive
 
 type nextStepMsg struct{}
 
-type formDoneMsg struct {
-	user     string
-	password string
+type loginDoneMsg struct {
+	container string
+	user      string
+	password  string
 }
 
 type actionSelectedMsg struct {

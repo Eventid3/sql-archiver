@@ -1,0 +1,8 @@
+/*
+Package mssql defines data models for Microsoft SQL Server interactions.
+*/
+package mssql
+
+type DBItem struct {
+	Name, ID, Created, State string
+}

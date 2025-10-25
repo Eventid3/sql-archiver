@@ -1,4 +1,4 @@
-package main
+package interactive
 
 import (
 	"github.com/charmbracelet/bubbles/list"
@@ -21,7 +21,7 @@ func (i item) Title() string       { return i.title }
 func (i item) Description() string { return i.desc }
 func (i item) FilterValue() string { return i.title }
 
-func NewConfirmModel(msg string) actionModel {
+func NewActionModel() actionModel {
 	items := []list.Item{
 		item{title: "List databases", desc: "Show all databases in the server", action: "list"},
 		item{title: "Backup", desc: "Backup selected databases to .bak file", action: "backup"},

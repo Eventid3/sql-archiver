@@ -1,4 +1,7 @@
-package main
+/*
+Package interactive implements an interactive command-line interface using the Bubble Tea framework.
+*/
+package interactive
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
@@ -7,32 +10,35 @@ import (
 type step int
 
 const (
-	stepWelcome step = iota
-	stepForm
+	stepLogin step = iota
 	stepAction
 	stepList
 )
 
-type model struct {
-	state   step
-	welcome welcomeModel
-	form    formModel
-	action  actionModel
-	list    listModel
+type ServerConfig struct {
+	container string
+	user      string
+	password  string
+}
 
-	formData string
+type model struct {
+	state  step
+	form   formModel
+	action actionModel
+	list   listModel
+
+	serverConfig ServerConfig
 }
 
 func InitialModel() model {
 	return model{
-		state:   0,
-		welcome: NewWelcomeModel(),
+		state: stepLogin,
+		form:  NewFormModel(),
 	}
 }
 
 func (m model) Init() tea.Cmd {
-	m.welcome = NewWelcomeModel()
-	return m.welcome.Init()
+	return nil
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -41,32 +47,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.String() == "ctrl+c" || msg.String() == "esc" {
 			return m, tea.Quit
 		}
-	case nextStepMsg:
-		m.state++
-		if m.state == stepForm {
-			m.form = NewFormModel()
-		}
-		return m, m.form.Init()
-	case formDoneMsg:
-		m.state++
-		m.formData = msg.user
-		m.action = NewConfirmModel(m.formData)
+	case loginDoneMsg:
+		m.state = stepAction
+		m.serverConfig.container = msg.container
+		m.serverConfig.user = msg.user
+		m.serverConfig.password = msg.password
+		m.action = NewActionModel()
 		return m, m.action.Init()
 	case actionSelectedMsg:
 		switch msg.action {
 		case "list":
 			m.state = stepList
-			m.list = NewListModel()
+			m.list = NewListModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password)
 			return m, m.list.Init()
 		}
+	case goToActionMsg:
+		m.state = stepAction
+		m.action = NewActionModel()
+		return m, m.action.Init()
 	}
 
 	switch m.state {
-	case stepWelcome:
-		newWelcome, cmd := m.welcome.Update(msg)
-		m.welcome = newWelcome.(welcomeModel)
-		return m, cmd
-	case stepForm:
+	case stepLogin:
 		newForm, cmd := m.form.Update(msg)
 		m.form = newForm.(formModel)
 		return m, cmd
@@ -84,9 +86,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	switch m.state {
-	case stepWelcome:
-		return m.welcome.View()
-	case stepForm:
+	case stepLogin:
 		return m.form.View()
 	case stepAction:
 		return m.action.View()
