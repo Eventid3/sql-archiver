@@ -13,8 +13,10 @@ const (
 	stepLogin step = iota
 	stepAction
 	stepList
-	stepBackup
-	stepRestore
+	stepBackupSelect
+	stepBackupExec
+	stepRestoreSelect
+	stepRestoreExec
 	stepListBakFiles
 	stepInspectBakFile
 )
@@ -26,11 +28,12 @@ type ServerConfig struct {
 }
 
 type model struct {
-	state  step
-	form   formModel
-	action actionModel
-	list   listModel
-	backup backupModel
+	state      step
+	form       formModel
+	action     actionModel
+	list       listModel
+	backup     backupModel
+	backupExec backupExecModel
 
 	activeModel tea.Model
 
@@ -71,7 +74,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list = NewListModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password)
 			return m, m.list.Init()
 		case "backup":
-			m.state = stepBackup
+			m.state = stepBackupSelect
 			m.backup = NewBackupModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password)
 			return m, m.backup.Init()
 		}
@@ -79,6 +82,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = stepAction
 		m.action = NewActionModel()
 		return m, m.action.Init()
+	case dbSelectedMsg:
+		m.state = stepBackupExec
+		m.backupExec = NewBackupExecModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password, msg.db, msg.filename)
+
 	}
 
 	// HANDLE STATE UPDATES
@@ -96,9 +103,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		newList, cmd := m.list.Update(msg)
 		m.list = newList.(listModel)
 		return m, cmd
-	case stepBackup:
+	case stepBackupSelect:
 		newBackup, cmd := m.backup.Update(msg)
 		m.backup = newBackup.(backupModel)
+		return m, cmd
+	case stepBackupExec:
+		newBackupExec, cmd := m.backupExec.Update(msg)
+		m.backupExec = newBackupExec.(backupExecModel)
 		return m, cmd
 	}
 	return m, nil
@@ -112,8 +123,10 @@ func (m model) View() string {
 		return m.action.View()
 	case stepList:
 		return m.list.View()
-	case stepBackup:
+	case stepBackupSelect:
 		return m.backup.View()
+	case stepBackupExec:
+		return m.backupExec.View()
 	}
 	return ""
 }

@@ -75,16 +75,25 @@ func (m backupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "enter":
-			return m, tea.Batch(
-				tea.Printf("Let's go to %s!", m.table.SelectedRow()[1]),
-			)
+			if m.table.Focused() {
+				m.table.Blur()
+				m.filename.Focus()
+				return m, textinput.Blink
+			} else {
+				selectedDB := m.table.SelectedRow()[0]
+				return m, func() tea.Msg { return dbSelectedMsg{selectedDB, m.filename.Value()} }
+			}
 		}
 	}
-	m.table, cmd = m.table.Update(msg)
+	if m.table.Focused() {
+		m.table, cmd = m.table.Update(msg)
+	} else {
+		m.filename, cmd = m.filename.Update(msg)
+	}
 	return m, cmd
 }
 
 // View implements tea.Model.
 func (m backupModel) View() string {
-	return baseStyle.Render(m.table.View()) + "\n"
+	return baseStyle.Render(m.table.View()) + "\n" + m.filename.View() + "\n"
 }

@@ -13,3 +13,8 @@ type actionSelectedMsg struct {
 }
 
 type goToActionMsg struct{}
+
+type dbSelectedMsg struct {
+	db       string
+	filename string
+}
