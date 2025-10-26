@@ -8,10 +8,10 @@ import (
 
 func GetDatabases(container, user, password string) ([]DBItem, error) {
 	if user == "" {
-		return []DBItem{}, fmt.Errorf("user required")
+		return nil, fmt.Errorf("user required")
 	}
 	if password == "" {
-		return []DBItem{}, fmt.Errorf("password required")
+		return nil, fmt.Errorf("password required")
 	}
 
 	query := "SELECT name, database_id, create_date, state_desc FROM sys.databases ORDER BY database_id"
@@ -31,13 +31,13 @@ func GetDatabases(container, user, password string) ([]DBItem, error) {
 
 	output, err := dockerCmd.CombinedOutput()
 	if err != nil {
-		return []DBItem{}, fmt.Errorf("failed to list databases: %w\nOutput: %s\nPassword: %s", err, string(output), password)
+		return nil, fmt.Errorf("failed to list databases: %w\nOutput: %s", err, string(output))
 	}
 
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 
 	if len(lines) == 0 {
-		return []DBItem{}, fmt.Errorf("no databases found")
+		return nil, fmt.Errorf("no databases found")
 	}
 
 	var result []DBItem

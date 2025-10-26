@@ -13,6 +13,10 @@ const (
 	stepLogin step = iota
 	stepAction
 	stepList
+	stepBackup
+	stepRestore
+	stepListBakFiles
+	stepInspectBakFile
 )
 
 type ServerConfig struct {
@@ -26,14 +30,18 @@ type model struct {
 	form   formModel
 	action actionModel
 	list   listModel
+	backup backupModel
+
+	activeModel tea.Model
 
 	serverConfig ServerConfig
 }
 
 func InitialModel() model {
+	form := NewFormModel()
 	return model{
 		state: stepLogin,
-		form:  NewFormModel(),
+		form:  form,
 	}
 }
 
@@ -42,6 +50,8 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// INTERCEPT MESSAGES
+	// -------------------
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if msg.String() == "ctrl+c" || msg.String() == "esc" {
@@ -60,6 +70,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state = stepList
 			m.list = NewListModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password)
 			return m, m.list.Init()
+		case "backup":
+			m.state = stepBackup
+			m.backup = NewBackupModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password)
+			return m, m.backup.Init()
 		}
 	case goToActionMsg:
 		m.state = stepAction
@@ -67,6 +81,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, m.action.Init()
 	}
 
+	// HANDLE STATE UPDATES
+	// -------------------
 	switch m.state {
 	case stepLogin:
 		newForm, cmd := m.form.Update(msg)
@@ -80,6 +96,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		newList, cmd := m.list.Update(msg)
 		m.list = newList.(listModel)
 		return m, cmd
+	case stepBackup:
+		newBackup, cmd := m.backup.Update(msg)
+		m.backup = newBackup.(backupModel)
+		return m, cmd
 	}
 	return m, nil
 }
@@ -92,6 +112,8 @@ func (m model) View() string {
 		return m.action.View()
 	case stepList:
 		return m.list.View()
+	case stepBackup:
+		return m.backup.View()
 	}
 	return ""
 }

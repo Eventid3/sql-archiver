@@ -14,12 +14,6 @@ type listModel struct {
 	err       error
 }
 
-type dbItem struct {
-	name           string
-	id             int
-	created, state string
-}
-
 func NewListModel(container, user, password string) listModel {
 	dbList, err := mssql.GetDatabases(container, user, password)
 	return listModel{databases: dbList, err: err}
@@ -43,9 +37,13 @@ func (m listModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View implements tea.Model.
 func (m listModel) View() string {
 	if m.err != nil {
-		return fmt.Sprintf("Error retrieving databases:\n\n%v", m.err)
+		return fmt.Sprintf(
+			"Error retrieving databases:\n\n%v\n\n%s",
+			m.err,
+			"Press Enter to go back to action selection.",
+		)
 	} else {
-		header := fmt.Sprintf("\n%-30s %-12s %-20s %-15s\n", "DATABASE NAME", "ID", "CREATED", "STATE\n"+strings.Repeat("-", 80)+"\n")
+		header := fmt.Sprintf("\n%-30s %-12s %-20s %-15s\n", "DATABASE NAME", "ID", "CREATED", "STATE\n"+strings.Repeat("-", 80))
 		dbList := ""
 		for _, item := range m.databases {
 			if len(item.Name) > 28 {
@@ -53,6 +51,11 @@ func (m listModel) View() string {
 			}
 			dbList += fmt.Sprintf("%-30s %-12s %-20s %-15s\n", item.Name, item.ID, item.Created, item.State)
 		}
-		return fmt.Sprintf("Here's a list of the databases:\n\n%s%s", header, dbList)
+		return fmt.Sprintf(
+			"Here's a list of the databases:\n\n%s%s\n\n%s",
+			header,
+			dbList,
+			"Press Enter to go back to action selection.",
+		)
 	}
 }
