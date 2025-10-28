@@ -9,12 +9,12 @@ import (
 
 type inspectModel struct {
 	bakFileName string
-	bakFileInfo string
+	bakFileInfo mssql.BackupEntry
 	err         error
 }
 
-func NewInspectModel(container, user, password, bakFileName string) inspectModel {
-	fileInfo, err := mssql.InspectBackupFile(container, user, password, bakFileName)
+func NewInspectModel(config ServerConfig, bakFileName string) inspectModel {
+	fileInfo, err := mssql.InspectBackupFile(config.container, config.user, config.password, bakFileName)
 	return inspectModel{
 		bakFileName: bakFileName,
 		bakFileInfo: fileInfo,
@@ -32,7 +32,9 @@ func (m inspectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter":
-			return m, func() tea.Msg { return goToActionMsg{} }
+			return m, func() tea.Msg {
+				return restoreBackupMsg{m.bakFileName, m.bakFileInfo.MdfFile.Name, m.bakFileInfo.LdfFile.Name}
+			}
 		}
 	}
 	return m, cmd
@@ -42,5 +44,15 @@ func (m inspectModel) View() string {
 	if m.err != nil {
 		return fmt.Sprintf("Error inspecting backup file: %v", m.err)
 	}
-	return fmt.Sprintf("Contents of backup file %s:\n\n%s", m.bakFileName, m.bakFileInfo)
+	result := fmt.Sprintf("Contents of backup file %s:\n\nDatabase: %s, Size: %s, BackupSize: %s\nLdf file: %s, Ldf size: %s",
+		m.bakFileName,
+		m.bakFileInfo.MdfFile.Name,
+		m.bakFileInfo.MdfFile.Size,
+		m.bakFileInfo.MdfFile.BackupSize,
+		m.bakFileInfo.LdfFile.Name,
+		m.bakFileInfo.LdfFile.Size,
+	)
+
+	result += "\n\nPress enter to restore file, or esc to go back."
+	return result
 }

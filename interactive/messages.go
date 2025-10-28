@@ -22,3 +22,11 @@ type dbSelectedMsg struct {
 type bakFileSelectedMsg struct {
 	filename string
 }
+
+type restoreBackupMsg struct {
+	filename, mdfName, ldfName string
+}
+
+type restoreExecMsg struct {
+	filename, mdfName, ldfName, newDBName string
+}

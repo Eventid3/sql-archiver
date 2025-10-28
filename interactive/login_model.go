@@ -119,8 +119,8 @@ func (m formModel) View() string {
 		`Fill the form below:
 
 Container: %s
-User:     %s
-Password: %s
+User:      %s
+Password:  %s
 
 Enter to submit, Esc or ctrl+q to quit.`,
 

@@ -12,5 +12,14 @@ type BakFile struct {
 }
 
 type BackupEntry struct {
-	MdfName, LogName, Size, Backupsize string
+	MdfFile MdfEntry
+	LdfFile LdfEntry
+}
+
+type MdfEntry struct {
+	Name, Size, BackupSize string
+}
+
+type LdfEntry struct {
+	Name, Size string
 }

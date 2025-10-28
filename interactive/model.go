@@ -7,19 +7,19 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type step int
-
-const (
-	stepLogin step = iota
-	stepAction
-	stepList
-	stepBackupSelect
-	stepBackupExec
-	stepRestoreSelect
-	stepRestoreExec
-	stepListBakFiles
-	stepInspectBakFile
-)
+// type step int
+//
+// const (
+// 	stepLogin step = iota
+// 	stepAction
+// 	stepList
+// 	stepBackupSelect
+// 	stepBackupExec
+// 	stepRestoreSelect
+// 	stepRestoreExec
+// 	stepListBakFiles
+// 	stepInspectBakFile
+// )
 
 type ServerConfig struct {
 	container string
@@ -28,7 +28,7 @@ type ServerConfig struct {
 }
 
 type model struct {
-	state        step
+	// state        step
 	activeModel  tea.Model
 	serverConfig ServerConfig
 }
@@ -36,7 +36,7 @@ type model struct {
 func InitialModel() model {
 	form := NewFormModel()
 	return model{
-		state:       stepLogin,
+		// state:       stepLogin,
 		activeModel: form,
 	}
 }
@@ -54,7 +54,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case loginDoneMsg:
-		m.state = stepAction
+		// m.state = stepAction
 		m.serverConfig.container = msg.container
 		m.serverConfig.user = msg.user
 		m.serverConfig.password = msg.password
@@ -63,25 +63,37 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case actionSelectedMsg:
 		switch msg.action {
 		case "list":
-			m.state = stepList
+			// m.state = stepList
 			m.activeModel = NewListModel(m.serverConfig)
 			return m, m.activeModel.Init()
 		case "backup":
-			m.state = stepBackupSelect
+			// m.state = stepBackupSelect
 			m.activeModel = NewBackupModel(m.serverConfig)
 			return m, m.activeModel.Init()
 		case "list_files":
-			m.state = stepListBakFiles
+			// m.state = stepListBakFiles
 			m.activeModel = NewListFilesModel(m.serverConfig)
 			return m, m.activeModel.Init()
 		}
 	case goToActionMsg:
-		m.state = stepAction
+		// m.state = stepAction
 		m.activeModel = NewActionModel()
 		return m, m.activeModel.Init()
 	case dbSelectedMsg:
-		m.state = stepBackupExec
+		// m.state = stepBackupExec
 		m.activeModel = NewBackupExecModel(m.serverConfig, msg.db, msg.filename)
+		return m, m.activeModel.Init()
+	case bakFileSelectedMsg:
+		// m.state = stepInspectBakFile
+		m.activeModel = NewInspectModel(m.serverConfig, msg.filename)
+		return m, m.activeModel.Init()
+	case restoreBackupMsg:
+		// m.state = stepRestoreSelect
+		m.activeModel = NewRestoreModel(m.serverConfig, msg.filename, msg.mdfName, msg.ldfName)
+		return m, m.activeModel.Init()
+	case restoreExecMsg:
+		// m.state = stepRestoreExec
+		m.activeModel = NewRestoreExecModel(m.serverConfig, msg.filename, msg.newDBName, msg.mdfName, msg.ldfName)
 		return m, m.activeModel.Init()
 	}
 
