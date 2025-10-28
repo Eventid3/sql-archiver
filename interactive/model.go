@@ -34,6 +34,7 @@ type model struct {
 	list       listModel
 	backup     backupModel
 	backupExec backupExecModel
+	listFiles  listFilesModel
 
 	activeModel tea.Model
 
@@ -77,6 +78,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state = stepBackupSelect
 			m.backup = NewBackupModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password)
 			return m, m.backup.Init()
+		case "list_files":
+			m.state = stepListBakFiles
+			m.listFiles = NewListFilesModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password)
+			return m, m.listFiles.Init()
 		}
 	case goToActionMsg:
 		m.state = stepAction
@@ -111,6 +116,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		newBackupExec, cmd := m.backupExec.Update(msg)
 		m.backupExec = newBackupExec.(backupExecModel)
 		return m, cmd
+	case stepListBakFiles:
+		newListBakFiles, cmd := m.listFiles.Update(msg)
+		m.listFiles = newListBakFiles.(listFilesModel)
+		return m, cmd
 	}
 	return m, nil
 }
@@ -127,6 +136,8 @@ func (m model) View() string {
 		return m.backup.View()
 	case stepBackupExec:
 		return m.backupExec.View()
+	case stepListBakFiles:
+		return m.listFiles.View()
 	}
 	return ""
 }

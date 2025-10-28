@@ -7,10 +7,10 @@ type DBItem struct {
 	Name, ID, Created, State string
 }
 
-type bakFile struct {
-	size, date, name string
+type BakFile struct {
+	Size, Date, Name string
 }
 
-type backupEntry struct {
-	mdfName, logName, size, backupsize string
+type BackupEntry struct {
+	MdfName, LogName, Size, Backupsize string
 }

@@ -18,3 +18,7 @@ type dbSelectedMsg struct {
 	db       string
 	filename string
 }
+
+type bakFileSelectedMsg struct {
+	filename string
+}

@@ -72,8 +72,6 @@ func (m backupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.table.Focus()
 			}
-		case "q", "ctrl+c":
-			return m, tea.Quit
 		case "enter":
 			if m.table.Focused() {
 				m.table.Blur()

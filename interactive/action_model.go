@@ -13,20 +13,20 @@ type actionModel struct {
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
 
-type item struct {
+type actionItem struct {
 	title, desc, action string
 }
 
-func (i item) Title() string       { return i.title }
-func (i item) Description() string { return i.desc }
-func (i item) FilterValue() string { return i.title }
+func (i actionItem) Title() string       { return i.title }
+func (i actionItem) Description() string { return i.desc }
+func (i actionItem) FilterValue() string { return i.title }
 
 func NewActionModel() actionModel {
 	items := []list.Item{
-		item{title: "List databases", desc: "Show all databases in the server", action: "list"},
-		item{title: "Backup", desc: "Backup selected databases to .bak file", action: "backup"},
-		item{title: "Restore", desc: "Restore databases from .bak file", action: "restore"},
-		item{title: "List files", desc: "List all the .bak files in the docker container", action: "list_files"},
+		actionItem{title: "List databases", desc: "Show all databases in the server", action: "list"},
+		actionItem{title: "Backup", desc: "Backup selected databases to .bak file", action: "backup"},
+		actionItem{title: "Restore", desc: "Restore databases from .bak file", action: "restore"},
+		actionItem{title: "List files", desc: "List all the .bak files in the docker container", action: "list_files"},
 	}
 
 	m := actionModel{
@@ -44,11 +44,8 @@ func (m actionModel) Init() tea.Cmd {
 func (m actionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
-			return m, tea.Quit
-		}
 		if msg.String() == "enter" {
-			action := m.list.SelectedItem().(item).action
+			action := m.list.SelectedItem().(actionItem).action
 			return m, func() tea.Msg { return actionSelectedMsg{action: action} }
 		}
 	case tea.WindowSizeMsg:
