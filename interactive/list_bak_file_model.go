@@ -39,7 +39,7 @@ func NewListFilesModel(container, user, password string) listFilesModel {
 		})
 	}
 	return listFilesModel{
-		list: list.New(items, list.NewDefaultDelegate(), 40, 20),
+		list: list.New(items, list.NewDefaultDelegate(), 40, 40),
 		err:  err,
 	}
 }
@@ -66,5 +66,8 @@ func (m listFilesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m listFilesModel) View() string {
+	if m.err != nil {
+		return fmt.Sprintf("error listing bak files: %v", m.err)
+	}
 	return docStyle.Render(m.list.View())
 }
