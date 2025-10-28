@@ -21,8 +21,8 @@ func (b bakFileItem) Title() string       { return b.name }
 func (b bakFileItem) Description() string { return fmt.Sprintf("Size: %s, Date: %s", b.size, b.date) }
 func (b bakFileItem) FilterValue() string { return b.name }
 
-func NewListFilesModel(container, user, password string) listFilesModel {
-	files, err := mssql.ListBackupFilesInContainer(container, user, password)
+func NewListFilesModel(config ServerConfig) listFilesModel {
+	files, err := mssql.ListBackupFilesInContainer(config.container, config.user, config.password)
 	if err != nil {
 		return listFilesModel{
 			err: err,

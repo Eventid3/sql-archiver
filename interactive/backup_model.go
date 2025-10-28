@@ -19,7 +19,7 @@ type backupModel struct {
 	err      error
 }
 
-func NewBackupModel(container, user, password string) backupModel {
+func NewBackupModel(config ServerConfig) backupModel {
 	columns := []table.Column{
 		{Title: "Database", Width: 30},
 		{Title: "ID", Width: 12},
@@ -27,7 +27,7 @@ func NewBackupModel(container, user, password string) backupModel {
 		{Title: "State", Width: 15},
 	}
 
-	databases, err := mssql.GetDatabases(container, user, password)
+	databases, err := mssql.GetDatabases(config.container, config.user, config.password)
 	if err != nil {
 		return backupModel{err: err}
 	}

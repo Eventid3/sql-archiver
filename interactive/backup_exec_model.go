@@ -9,8 +9,8 @@ type backupExecModel struct {
 	err error
 }
 
-func NewBackupExecModel(container, user, password, dbName, filename string) backupExecModel {
-	err := mssql.BackupDatabase(container, user, password, dbName, filename)
+func NewBackupExecModel(config ServerConfig, dbName, filename string) backupExecModel {
+	err := mssql.BackupDatabase(config.container, config.user, config.password, dbName, filename)
 
 	return backupExecModel{
 		err: err,

@@ -14,8 +14,8 @@ type listModel struct {
 	err       error
 }
 
-func NewListModel(container, user, password string) listModel {
-	dbList, err := mssql.GetDatabases(container, user, password)
+func NewListModel(config ServerConfig) listModel {
+	dbList, err := mssql.GetDatabases(config.container, config.user, config.password)
 	return listModel{databases: dbList, err: err}
 }
 

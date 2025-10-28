@@ -64,15 +64,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.action {
 		case "list":
 			m.state = stepList
-			m.activeModel = NewListModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password)
+			m.activeModel = NewListModel(m.serverConfig)
 			return m, m.activeModel.Init()
 		case "backup":
 			m.state = stepBackupSelect
-			m.activeModel = NewBackupModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password)
+			m.activeModel = NewBackupModel(m.serverConfig)
 			return m, m.activeModel.Init()
 		case "list_files":
 			m.state = stepListBakFiles
-			m.activeModel = NewListFilesModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password)
+			m.activeModel = NewListFilesModel(m.serverConfig)
 			return m, m.activeModel.Init()
 		}
 	case goToActionMsg:
@@ -81,7 +81,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, m.activeModel.Init()
 	case dbSelectedMsg:
 		m.state = stepBackupExec
-		m.activeModel = NewBackupExecModel(m.serverConfig.container, m.serverConfig.user, m.serverConfig.password, msg.db, msg.filename)
+		m.activeModel = NewBackupExecModel(m.serverConfig, msg.db, msg.filename)
 		return m, m.activeModel.Init()
 	}
 
