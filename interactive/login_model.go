@@ -3,20 +3,23 @@ package interactive
 import (
 	"fmt"
 
+	"github.com/Eventid3/sql-archiver/mssql"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 // -------- FORM MODEL --------------
-type formModel struct {
+type loginModel struct {
 	focusIndex int
 	inputs     []textinput.Model
+	err        error
 }
 
-func NewFormModel() formModel {
-	m := formModel{
+func NewLoginModel(err error) loginModel {
+	m := loginModel{
 		focusIndex: 0,
 		inputs:     make([]textinput.Model, 3),
+		err:        err,
 	}
 	m.inputs[0] = textinput.New()
 	m.inputs[0].Placeholder = "container"
@@ -36,11 +39,11 @@ func NewFormModel() formModel {
 }
 
 // Init implements tea.Model.
-func (m formModel) Init() tea.Cmd {
+func (m loginModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m formModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m loginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -54,6 +57,11 @@ func (m formModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// check for enter on last input
 			if s == "enter" && m.focusIndex == len(m.inputs)-1 {
 				return m, func() tea.Msg {
+					err := mssql.CheckConnection(m.inputs[0].Value(), m.inputs[1].Value(), m.inputs[2].Value())
+					if err != nil {
+						return loginFailedMsg{err: err}
+					}
+
 					return loginDoneMsg{
 						container: m.inputs[0].Value(),
 						user:      m.inputs[1].Value(),
@@ -101,7 +109,7 @@ func (m formModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *formModel) updateInputs(msg tea.Msg) tea.Cmd {
+func (m *loginModel) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
 	// Only text inputs with Focus() set will respond, so it's safe to simply
@@ -114,8 +122,8 @@ func (m *formModel) updateInputs(msg tea.Msg) tea.Cmd {
 }
 
 // View implements tea.Model.
-func (m formModel) View() string {
-	return fmt.Sprintf(
+func (m loginModel) View() string {
+	result := fmt.Sprintf(
 		`Fill the form below:
 
 Container: %s
@@ -128,4 +136,10 @@ Enter to submit, Esc or ctrl+q to quit.`,
 		m.inputs[1].View(),
 		m.inputs[2].View(),
 	)
+
+	if m.err != nil {
+		result += fmt.Sprintf("\n\nError: %s", m.err.Error())
+	}
+
+	return result
 }

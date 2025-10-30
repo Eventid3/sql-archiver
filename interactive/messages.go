@@ -2,6 +2,10 @@ package interactive
 
 type nextStepMsg struct{}
 
+type loginFailedMsg struct {
+	err error
+}
+
 type loginDoneMsg struct {
 	container string
 	user      string

@@ -23,10 +23,8 @@ func (i actionItem) FilterValue() string { return i.title }
 
 func NewActionModel() actionModel {
 	items := []list.Item{
-		actionItem{title: "List databases", desc: "Show all databases in the server", action: "list"},
-		actionItem{title: "Backup", desc: "Backup selected databases to .bak file", action: "backup"},
-		actionItem{title: "Restore", desc: "Restore databases from .bak file", action: "restore"},
-		actionItem{title: "List files", desc: "List all the .bak files in the docker container", action: "list_files"},
+		actionItem{title: "List databases  -> BACKUP", desc: "Show all databases in the server", action: "backup"},
+		actionItem{title: "List .bak files -> RESTORE", desc: "List all the .bak files in the docker container, and restore database", action: "restore"},
 	}
 
 	m := actionModel{
@@ -44,9 +42,12 @@ func (m actionModel) Init() tea.Cmd {
 func (m actionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "enter" {
+		switch msg.String() {
+		case "enter":
 			action := m.list.SelectedItem().(actionItem).action
 			return m, func() tea.Msg { return actionSelectedMsg{action: action} }
+		case "esc":
+			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()

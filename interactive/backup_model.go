@@ -42,7 +42,7 @@ func NewBackupModel(config ServerConfig) backupModel {
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
-		table.WithHeight(10),
+		table.WithHeight(20),
 	)
 
 	filenameInput := textinput.New()
@@ -68,7 +68,7 @@ func (m backupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "esc":
 			if m.table.Focused() {
-				m.table.Blur()
+				return m, func() tea.Msg { return goToActionMsg{} }
 			} else {
 				m.table.Focus()
 			}
@@ -93,5 +93,8 @@ func (m backupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View implements tea.Model.
 func (m backupModel) View() string {
-	return baseStyle.Render(m.table.View()) + "\n" + m.filename.View() + "\n"
+	return "Select a database to backup. Press esc to go back.\n\n" +
+		baseStyle.Render(m.table.View()) +
+		"\n" +
+		m.filename.View() + "\n"
 }
