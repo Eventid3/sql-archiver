@@ -51,9 +51,12 @@ func (m listFilesModel) Init() tea.Cmd {
 func (m listFilesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "enter" {
+		switch msg.String() {
+		case "enter":
 			file := m.list.SelectedItem().(bakFileItem)
 			return m, func() tea.Msg { return bakFileSelectedMsg{file.name} }
+		case "esc", "q":
+			return m, func() tea.Msg { return goToActionMsg{} }
 		}
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()

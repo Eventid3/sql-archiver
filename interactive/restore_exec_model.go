@@ -6,12 +6,13 @@ import (
 )
 
 type restoreExecModel struct {
-	err error
+	err        error
+	infoString string
 }
 
 func NewRestoreExecModel(config ServerConfig, bakfile, dbName, mdf, ldf string) restoreExecModel {
-	err := mssql.RestoreDatabase(config.container, config.user, config.password, bakfile, dbName, mdf, ldf)
-	return restoreExecModel{err}
+	query, err := mssql.RestoreDatabase(config.container, config.user, config.password, bakfile, dbName, mdf, ldf)
+	return restoreExecModel{err, query}
 }
 
 func (m restoreExecModel) Init() tea.Cmd {
@@ -31,8 +32,8 @@ func (m restoreExecModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m restoreExecModel) View() string {
 	if m.err != nil {
-		return "Error during restore:\n\n" + m.err.Error() + "\n\nPress Enter to go back to action selection."
+		return "Error during restore:\n\n" + m.err.Error() + "\n\nPress Enter to go back to action selection.\nInfo:\n" + m.infoString
 	}
 
-	return "Restore completed successfully!\n\nPress Enter to go back to action selection."
+	return "Restore completed successfully!\n\nPress Enter to go back to action selection.\nInfo:\n" + m.infoString
 }

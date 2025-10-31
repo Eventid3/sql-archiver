@@ -18,7 +18,19 @@ type model struct {
 	serverConfig ServerConfig
 }
 
+var debugmode = true
+
 func InitialModel() model {
+	if debugmode {
+		return model{
+			NewActionModel(),
+			ServerConfig{
+				"mssql",
+				"sa",
+				"YourStrong@Passw0rd",
+			},
+		}
+	}
 	form := NewLoginModel(nil)
 	return model{
 		activeModel: form,
@@ -41,7 +53,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.activeModel = NewLoginModel(msg.err)
 		return m, m.activeModel.Init()
 	case loginDoneMsg:
-		// m.state = stepAction
 		m.serverConfig.container = msg.container
 		m.serverConfig.user = msg.user
 		m.serverConfig.password = msg.password

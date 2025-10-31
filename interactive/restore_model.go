@@ -11,7 +11,6 @@ type restoreModel struct {
 	focusIndex                 int
 	inputs                     []textinput.Model
 	filename, mdfFile, ldfFile string
-	// config           ServerConfig
 }
 
 func NewRestoreModel(config ServerConfig, filename, mdf, ldf string) restoreModel {
@@ -21,7 +20,6 @@ func NewRestoreModel(config ServerConfig, filename, mdf, ldf string) restoreMode
 		filename:   filename,
 		mdfFile:    mdf,
 		ldfFile:    ldf,
-		// config:     config,
 	}
 
 	m.inputs[0] = textinput.New()
