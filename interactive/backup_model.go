@@ -2,6 +2,7 @@ package interactive
 
 import (
 	"github.com/Eventid3/sql-archiver/mssql"
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -16,6 +17,7 @@ var baseStyle = lipgloss.NewStyle().
 type backupModel struct {
 	table    table.Model
 	filename textinput.Model
+	help     help.Model
 	err      error
 }
 
@@ -52,6 +54,7 @@ func NewBackupModel(config ServerConfig) backupModel {
 	return backupModel{
 		dbTable,
 		filenameInput,
+		help.New(),
 		nil,
 	}
 }
@@ -96,5 +99,6 @@ func (m backupModel) View() string {
 	return "Select a database to backup. Press esc to go back.\n\n" +
 		baseStyle.Render(m.table.View()) +
 		"\n" +
-		m.filename.View() + "\n"
+		m.filename.View() + "\n\n" +
+		m.help.FullHelpView(m.table.KeyMap.FullHelp())
 }

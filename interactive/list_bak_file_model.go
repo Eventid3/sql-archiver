@@ -4,22 +4,16 @@ import (
 	"fmt"
 
 	"github.com/Eventid3/sql-archiver/mssql"
-	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type listFilesModel struct {
-	list list.Model
-	err  error
+	table table.Model
+	help  help.Model
+	err   error
 }
-
-type bakFileItem struct {
-	size, date, name string
-}
-
-func (b bakFileItem) Title() string       { return b.name }
-func (b bakFileItem) Description() string { return fmt.Sprintf("Size: %s, Date: %s", b.size, b.date) }
-func (b bakFileItem) FilterValue() string { return b.name }
 
 func NewListFilesModel(config ServerConfig) listFilesModel {
 	files, err := mssql.ListBackupFilesInContainer(config.container, config.user, config.password)
@@ -29,18 +23,32 @@ func NewListFilesModel(config ServerConfig) listFilesModel {
 		}
 	}
 
-	items := []list.Item{}
+	columns := []table.Column{
+		{Title: "Filename", Width: 40},
+		{Title: "Size", Width: 15},
+		{Title: "Date", Width: 20},
+	}
+
+	rows := []table.Row{}
 
 	for _, f := range files {
-		items = append(items, bakFileItem{
-			size: f.Size,
-			date: f.Date,
-			name: f.Name,
+		rows = append(rows, table.Row{
+			f.Name,
+			f.Size,
+			f.Date,
 		})
 	}
+
+	fileTable := table.New(
+		table.WithColumns(columns),
+		table.WithRows(rows),
+		table.WithFocused(true),
+		table.WithHeight(10),
+	)
 	return listFilesModel{
-		list: list.New(items, list.NewDefaultDelegate(), 40, 40),
-		err:  err,
+		fileTable,
+		help.New(),
+		nil,
 	}
 }
 
@@ -53,18 +61,15 @@ func (m listFilesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter":
-			file := m.list.SelectedItem().(bakFileItem)
-			return m, func() tea.Msg { return bakFileSelectedMsg{file.name} }
+			filename := m.table.SelectedRow()[0]
+			return m, func() tea.Msg { return bakFileSelectedMsg{filename} }
 		case "esc", "q":
 			return m, func() tea.Msg { return goToActionMsg{} }
 		}
-	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
 	}
 
 	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
+	m.table, cmd = m.table.Update(msg)
 	return m, cmd
 }
 
@@ -72,5 +77,6 @@ func (m listFilesModel) View() string {
 	if m.err != nil {
 		return fmt.Sprintf("error listing bak files: %v", m.err)
 	}
-	return docStyle.Render(m.list.View())
+	return baseStyle.Render(m.table.View()) + "\n\n" +
+		m.help.FullHelpView(m.table.KeyMap.FullHelp())
 }

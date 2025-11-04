@@ -9,21 +9,21 @@ import (
 )
 
 // ------ WELCOME MODEL --------
-type listModel struct {
+type listDbsModel struct {
 	databases []mssql.DBItem
 	err       error
 }
 
-func NewListModel(config ServerConfig) listModel {
+func NewListModel(config ServerConfig) listDbsModel {
 	dbList, err := mssql.GetDatabases(config.container, config.user, config.password)
-	return listModel{databases: dbList, err: err}
+	return listDbsModel{databases: dbList, err: err}
 }
 
-func (m listModel) Init() tea.Cmd {
+func (m listDbsModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m listModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m listDbsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -35,7 +35,7 @@ func (m listModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View implements tea.Model.
-func (m listModel) View() string {
+func (m listDbsModel) View() string {
 	if m.err != nil {
 		return fmt.Sprintf(
 			"Error retrieving databases:\n\n%v\n\n%s",
