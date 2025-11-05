@@ -138,7 +138,7 @@ Enter to submit, Esc or ctrl+q to quit.`,
 	)
 
 	if m.err != nil {
-		result += fmt.Sprintf("\n\nError: %s", m.err.Error())
+		result += errorTextStyle.Render(fmt.Sprintf("\n\nError: %s", m.err.Error()))
 	}
 
 	return result

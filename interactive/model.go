@@ -18,7 +18,7 @@ type model struct {
 	serverConfig ServerConfig
 }
 
-var debugmode = true
+var debugmode = false
 
 func InitialModel() model {
 	if debugmode {
@@ -92,5 +92,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	return m.activeModel.View()
+	return headingStyle.Render(logo) + "\n\n" +
+		m.activeModel.View()
 }

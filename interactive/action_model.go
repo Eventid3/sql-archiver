@@ -3,15 +3,12 @@ package interactive
 import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 // ----------- CONFIRM MODEL -------------
 type actionModel struct {
 	list list.Model
 }
-
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
 
 type actionItem struct {
 	title, desc, action string

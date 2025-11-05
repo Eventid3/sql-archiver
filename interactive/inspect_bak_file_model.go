@@ -35,6 +35,8 @@ func (m inspectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, func() tea.Msg {
 				return restoreBackupMsg{m.bakFileName, m.bakFileInfo.MdfFile.Name, m.bakFileInfo.LdfFile.Name}
 			}
+		case "esc":
+			return m, func() tea.Msg { return goToActionMsg{} }
 		}
 	}
 	return m, cmd
@@ -42,17 +44,14 @@ func (m inspectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m inspectModel) View() string {
 	if m.err != nil {
-		return fmt.Sprintf("Error inspecting backup file: %v", m.err)
+		return errorTextStyle.Render(fmt.Sprintf("Error inspecting backup file: %v", m.err))
 	}
-	result := fmt.Sprintf("Contents of backup file %s:\n\nDatabase: %s, Size: %s, BackupSize: %s\nLdf file: %s, Ldf size: %s",
-		m.bakFileName,
-		m.bakFileInfo.MdfFile.Name,
-		m.bakFileInfo.MdfFile.Size,
-		m.bakFileInfo.MdfFile.BackupSize,
-		m.bakFileInfo.LdfFile.Name,
-		m.bakFileInfo.LdfFile.Size,
-	)
 
-	result += "\n\nPress enter to restore file, or esc to go back."
-	return result
+	subHeader := baseStyle.Render(fmt.Sprintf("Contents of backup file %s", m.bakFileName))
+
+	rowHeader := fmt.Sprintf("%s%s%s%s", colHeaderStyle.Width(30).Render("Filename"), colHeaderStyle.Width(10).Render("Type"), colHeaderStyle.Width(15).Render("Size"), colHeaderStyle.Width(15).Render("BackupSize"))
+	mdfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.MdfFile.Name, "MDF", m.bakFileInfo.MdfFile.Size, m.bakFileInfo.MdfFile.BackupSize)
+	ldfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.LdfFile.Name, "LDF", m.bakFileInfo.LdfFile.Size, "-")
+
+	return subHeader + "\n" + rowHeader + "\n" + mdfLine + "\n" + ldfLine
 }
