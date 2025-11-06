@@ -13,16 +13,16 @@ type ServerConfig struct {
 	password  string
 }
 
-type model struct {
+type parentModel struct {
 	activeModel  tea.Model
 	serverConfig ServerConfig
 }
 
 var debugmode = false
 
-func InitialModel() model {
+func InitialModel() parentModel {
 	if debugmode {
-		return model{
+		return parentModel{
 			NewActionModel(),
 			ServerConfig{
 				"mssql",
@@ -32,16 +32,16 @@ func InitialModel() model {
 		}
 	}
 	form := NewLoginModel(nil)
-	return model{
+	return parentModel{
 		activeModel: form,
 	}
 }
 
-func (m model) Init() tea.Cmd {
+func (m parentModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// INTERCEPT MESSAGES
 	// -------------------
 	switch msg := msg.(type) {
@@ -91,7 +91,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
+func (m parentModel) View() string {
 	return headingStyle.Render(logo) + "\n\n" +
 		m.activeModel.View()
 }

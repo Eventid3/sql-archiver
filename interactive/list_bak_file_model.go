@@ -43,7 +43,7 @@ func NewListFilesModel(config ServerConfig) listFilesModel {
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
-		table.WithHeight(10),
+		table.WithHeight(20),
 	)
 	return listFilesModel{
 		fileTable,
@@ -77,6 +77,8 @@ func (m listFilesModel) View() string {
 	if m.err != nil {
 		return fmt.Sprintf("error listing bak files: %v", m.err)
 	}
-	return baseStyle.Render(m.table.View()) + "\n\n" +
+
+	return "Select a file to restore from by pressing 'Enter'. Press 'Esc' to go back.\n" +
+		borderStyle.Render(m.table.View()) + "\n\n" +
 		m.help.FullHelpView(m.table.KeyMap.FullHelp())
 }

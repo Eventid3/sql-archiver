@@ -2,7 +2,7 @@ package interactive
 
 import "github.com/charmbracelet/lipgloss"
 
-var baseStyle = lipgloss.NewStyle().
+var borderStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
 	Margin(1, 2).
 	Padding(1, 1).
@@ -44,5 +44,5 @@ var logo string = `
 ╔═╗ ┌─┐ ┬     ╔═╗┌─┐┌──┐ ││┐ ┌┌─┌─┐
 ╚═╗ │ │ │  ── ║═║├┬┘│  ├─┤││ │├─├┬┘
 ╚═╝ └─┴ ┴─┘   ╝ ╚┘└─└──│ └┴└─┘└─┘└
-    SQL  ARCHIVER
+SQL  ARCHIVER
 `

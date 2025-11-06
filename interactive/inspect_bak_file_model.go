@@ -47,7 +47,7 @@ func (m inspectModel) View() string {
 		return errorTextStyle.Render(fmt.Sprintf("Error inspecting backup file: %v", m.err))
 	}
 
-	subHeader := baseStyle.Render(fmt.Sprintf("Contents of backup file %s", m.bakFileName))
+	subHeader := borderStyle.Render(fmt.Sprintf("Contents of backup file %s", m.bakFileName))
 
 	rowHeader := fmt.Sprintf("%s%s%s%s", colHeaderStyle.Width(30).Render("Filename"), colHeaderStyle.Width(10).Render("Type"), colHeaderStyle.Width(15).Render("Size"), colHeaderStyle.Width(15).Render("BackupSize"))
 	mdfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.MdfFile.Name, "MDF", m.bakFileInfo.MdfFile.Size, m.bakFileInfo.MdfFile.BackupSize)
