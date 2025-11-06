@@ -4,6 +4,7 @@ Package interactive implements an interactive command-line interface using the B
 package interactive
 
 import (
+	"github.com/Eventid3/sql-archiver/mssql"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -18,22 +19,30 @@ type parentModel struct {
 	serverConfig ServerConfig
 }
 
-var debugmode = false
-
 func InitialModel() parentModel {
-	if debugmode {
-		return parentModel{
-			NewActionModel(),
-			ServerConfig{
-				"mssql",
-				"sa",
-				"YourStrong@Passw0rd",
-			},
-		}
-	}
 	form := NewLoginModel(nil)
 	return parentModel{
 		activeModel: form,
+	}
+}
+
+func InitialModelWithConfig(container, user, password string) parentModel {
+	config := ServerConfig{
+		container,
+		user,
+		password,
+	}
+
+	err := mssql.CheckConnection(container, user, password)
+	if err != nil {
+		return parentModel{
+			activeModel: NewLoginModel(err),
+		}
+	}
+
+	return parentModel{
+		activeModel:  NewActionModel(),
+		serverConfig: config,
 	}
 }
 
