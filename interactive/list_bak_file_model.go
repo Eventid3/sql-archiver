@@ -78,7 +78,7 @@ func (m listFilesModel) View() string {
 		return fmt.Sprintf("error listing bak files: %v", m.err)
 	}
 
-	return "Select a file to restore from by pressing 'Enter'. Press 'Esc' to go back.\n" +
-		borderStyle.Render(m.table.View()) + "\n\n" +
+	return TableTitleStyle.Render("Select a file to restore from by pressing 'Enter'. Press 'Esc' to go back.") + "\n" +
+		BorderStyle.Render(m.table.View()) + "\n\n" +
 		m.help.FullHelpView(m.table.KeyMap.FullHelp())
 }

@@ -44,12 +44,12 @@ func (m inspectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m inspectModel) View() string {
 	if m.err != nil {
-		return errorTextStyle.Render(fmt.Sprintf("Error inspecting backup file: %v", m.err))
+		return ErrorTextStyle.Render(fmt.Sprintf("Error inspecting backup file: %v", m.err))
 	}
 
-	subHeader := borderStyle.Render(fmt.Sprintf("Contents of backup file %s", m.bakFileName))
+	subHeader := BorderStyle.Render(fmt.Sprintf("Contents of backup file %s", m.bakFileName))
 
-	rowHeader := fmt.Sprintf("%s%s%s%s", colHeaderStyle.Width(30).Render("Filename"), colHeaderStyle.Width(10).Render("Type"), colHeaderStyle.Width(15).Render("Size"), colHeaderStyle.Width(15).Render("BackupSize"))
+	rowHeader := fmt.Sprintf("%s%s%s%s", ColHeaderStyle.Width(30).Render("Filename"), ColHeaderStyle.Width(10).Render("Type"), ColHeaderStyle.Width(15).Render("Size"), ColHeaderStyle.Width(15).Render("BackupSize"))
 	mdfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.MdfFile.Name, "MDF", m.bakFileInfo.MdfFile.Size, m.bakFileInfo.MdfFile.BackupSize)
 	ldfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.LdfFile.Name, "LDF", m.bakFileInfo.LdfFile.Size, "-")
 

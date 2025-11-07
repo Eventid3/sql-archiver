@@ -2,47 +2,26 @@ package interactive
 
 import "github.com/charmbracelet/lipgloss"
 
-var borderStyle = lipgloss.NewStyle().
+var OuterStyle = lipgloss.NewStyle().Margin(0, 2)
+
+var BorderStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
-	Margin(1, 2).
 	Padding(1, 1).
 	BorderForeground(lipgloss.Color("240"))
 
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
+var DocStyle = lipgloss.NewStyle().Margin(1, 2)
 
-var headingStyle = lipgloss.NewStyle().
+var HeadingStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("99")).
 	Bold(true).Align(lipgloss.Center)
 
-var colHeaderStyle = lipgloss.NewStyle().
+var ColHeaderStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("#ffffff")).
 	Background(lipgloss.Color("99"))
 
-var errorTextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+var TableTitleStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("#ffffff")).
+	Background(lipgloss.Color("#5E5ED2")).
+	Padding(0, 1).Margin(0, 2)
 
-var buildingBlocks = `
-╔
-╗
-╚
-╝
-═
-║
-┬
-┴
-├
-┤
-┼
-┌
-┐
-└
-┘
-─
-│
-`
-
-var logo string = `
-╔═╗ ┌─┐ ┬     ╔═╗┌─┐┌──┐ ││┐ ┌┌─┌─┐
-╚═╗ │ │ │  ── ║═║├┬┘│  ├─┤││ │├─├┬┘
-╚═╝ └─┴ ┴─┘   ╝ ╚┘└─└──│ └┴└─┘└─┘└
-SQL  ARCHIVER
-`
+var ErrorTextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))

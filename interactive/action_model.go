@@ -28,6 +28,7 @@ func NewActionModel() actionModel {
 		list: list.New(items, list.NewDefaultDelegate(), 40, 20),
 	}
 	m.list.Title = "Select an action"
+	m.list.SetHeight(20)
 	return m
 }
 
@@ -46,9 +47,6 @@ func (m actionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			return m, tea.Quit
 		}
-	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
 	}
 
 	var cmd tea.Cmd
@@ -56,7 +54,6 @@ func (m actionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-// View implements tea.Model.
 func (m actionModel) View() string {
-	return docStyle.Render(m.list.View())
+	return m.list.View()
 }

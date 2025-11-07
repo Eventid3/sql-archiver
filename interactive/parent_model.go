@@ -6,6 +6,7 @@ package interactive
 import (
 	"github.com/Eventid3/sql-archiver/mssql"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type ServerConfig struct {
@@ -19,14 +20,14 @@ type parentModel struct {
 	serverConfig ServerConfig
 }
 
-func InitialModel() parentModel {
+func InitialModel() *parentModel {
 	form := NewLoginModel(nil)
-	return parentModel{
+	return &parentModel{
 		activeModel: form,
 	}
 }
 
-func InitialModelWithConfig(container, user, password string) parentModel {
+func InitialModelWithConfig(container, user, password string) *parentModel {
 	config := ServerConfig{
 		container,
 		user,
@@ -35,22 +36,22 @@ func InitialModelWithConfig(container, user, password string) parentModel {
 
 	err := mssql.CheckConnection(container, user, password)
 	if err != nil {
-		return parentModel{
+		return &parentModel{
 			activeModel: NewLoginModel(err),
 		}
 	}
 
-	return parentModel{
+	return &parentModel{
 		activeModel:  NewActionModel(),
 		serverConfig: config,
 	}
 }
 
-func (m parentModel) Init() tea.Cmd {
-	return nil
+func (m *parentModel) Init() tea.Cmd {
+	return m.activeModel.Init()
 }
 
-func (m parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// INTERCEPT MESSAGES
 	// -------------------
 	switch msg := msg.(type) {
@@ -100,7 +101,14 @@ func (m parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m parentModel) View() string {
-	return headingStyle.Render(logo) + "\n\n" +
-		m.activeModel.View()
+func (m *parentModel) View() string {
+	header := lipgloss.JoinVertical(lipgloss.Left,
+		HeadingStyle.Render(Logo),
+		RenderStatusBar(m.serverConfig.container, m.activeModel),
+	)
+
+	return OuterStyle.Render(lipgloss.JoinVertical(lipgloss.Left,
+		header, "\n",
+		m.activeModel.View(),
+	))
 }

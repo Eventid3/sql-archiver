@@ -18,9 +18,6 @@ func main() {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Println("Error:", err)
-		fmt.Println("Press Enter to exit...")
-		fmt.Scanln()
 		p := tea.NewProgram(interactive.InitialModel(), tea.WithAltScreen())
 		if _, err := p.Run(); err != nil {
 			fmt.Printf("Alas, there's been an error: %v", err)
@@ -37,14 +34,4 @@ func main() {
 			os.Exit(1)
 		}
 	}
-
-	// if len(os.Args) > 1 {
-	// 	cmd.Execute()
-	// } else {
-	// 	p := tea.NewProgram(interactive.InitialModel(), tea.WithAltScreen())
-	// 	if _, err := p.Run(); err != nil {
-	// 		fmt.Printf("Alas, there's been an error: %v", err)
-	// 		os.Exit(1)
-	// 	}
-	// }
 }

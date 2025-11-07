@@ -91,8 +91,8 @@ func (m backupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View implements tea.Model.
 func (m backupModel) View() string {
-	return "Select a database to backup. Press esc to go back.\n" +
-		borderStyle.Render(m.table.View()) +
+	return TableTitleStyle.Render("Select a database to backup. Press esc to go back.") + "\n" +
+		BorderStyle.Render(m.table.View()) +
 		"\n" +
 		"Enter a filename (must end with '.bak'): " + m.filename.View() + "\n\n" +
 		m.help.FullHelpView(m.table.KeyMap.FullHelp())

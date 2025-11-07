@@ -130,7 +130,7 @@ Container: %s
 User:      %s
 Password:  %s
 
-Enter to submit, Esc or ctrl+q to quit.`,
+Enter to submit, Esc or ctrl+q to q.`,
 
 		m.inputs[0].View(),
 		m.inputs[1].View(),
@@ -138,7 +138,7 @@ Enter to submit, Esc or ctrl+q to quit.`,
 	)
 
 	if m.err != nil {
-		result += errorTextStyle.Render(fmt.Sprintf("\n\nError: %s", m.err.Error()))
+		result += ErrorTextStyle.Render(fmt.Sprintf("\n\nError: %s", m.err.Error()))
 	}
 
 	return result
