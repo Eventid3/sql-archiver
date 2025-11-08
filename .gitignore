@@ -1,0 +1,7 @@
+
+# editor/ide folders
+.vscode/
+.idea/
+
+# build file
+sql-archiver
