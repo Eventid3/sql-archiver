@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type listFilesModel struct {
@@ -78,7 +79,12 @@ func (m listFilesModel) View() string {
 		return fmt.Sprintf("error listing bak files: %v", m.err)
 	}
 
-	return TableTitleStyle.Render("Select a file to restore from by pressing 'Enter'. Press 'Esc' to go back.") + "\n" +
-		BorderStyle.Render(m.table.View()) + "\n\n" +
-		m.help.FullHelpView(m.table.KeyMap.FullHelp())
+	return TableTitleStyle.Render(
+		lipgloss.JoinVertical(lipgloss.Left,
+			"Select a file to restore from by pressing 'Enter'. Press 'Esc' to go back.",
+			BorderStyle.Render(m.table.View()),
+			"\n",
+			m.help.FullHelpView(m.table.KeyMap.FullHelp()),
+		),
+	)
 }

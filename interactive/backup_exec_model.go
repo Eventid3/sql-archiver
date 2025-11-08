@@ -3,6 +3,7 @@ package interactive
 import (
 	"github.com/Eventid3/sql-archiver/mssql"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type backupExecModel struct {
@@ -37,5 +38,8 @@ func (m backupExecModel) View() string {
 		return "Error during backup:\n\n" + m.err.Error() + "\n\nPress Enter to go back to action selection."
 	}
 
-	return "Backup completed successfully!\n\nPress Enter to go back to action selection."
+	return lipgloss.JoinVertical(lipgloss.Left,
+		"Backup completed successfully!",
+		"Press 'Enter' to go back to action selection.",
+	)
 }

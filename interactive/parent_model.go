@@ -68,6 +68,9 @@ func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.serverConfig.password = msg.password
 		m.activeModel = NewActionModel()
 		return m, m.activeModel.Init()
+	case goToActionMsg:
+		m.activeModel = NewActionModel()
+		return m, m.activeModel.Init()
 	case actionSelectedMsg:
 		switch msg.action {
 		case "backup":
@@ -77,9 +80,6 @@ func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.activeModel = NewListFilesModel(m.serverConfig)
 			return m, m.activeModel.Init()
 		}
-	case goToActionMsg:
-		m.activeModel = NewActionModel()
-		return m, m.activeModel.Init()
 	case dbSelectedMsg:
 		m.activeModel = NewBackupExecModel(m.serverConfig, msg.db, msg.filename)
 		return m, m.activeModel.Init()
@@ -87,10 +87,10 @@ func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.activeModel = NewInspectModel(m.serverConfig, msg.filename)
 		return m, m.activeModel.Init()
 	case restoreBackupMsg:
-		m.activeModel = NewRestoreModel(m.serverConfig, msg.filename, msg.mdfName, msg.ldfName)
+		m.activeModel = NewRestoreModel(m.serverConfig, msg.fileInfo)
 		return m, m.activeModel.Init()
 	case restoreExecMsg:
-		m.activeModel = NewRestoreExecModel(m.serverConfig, msg.filename, msg.newDBName, msg.mdfName, msg.ldfName)
+		m.activeModel = NewRestoreExecModel(m.serverConfig, msg.fileInfo, msg.newDBName)
 		return m, m.activeModel.Init()
 	}
 
@@ -102,13 +102,10 @@ func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *parentModel) View() string {
-	header := lipgloss.JoinVertical(lipgloss.Left,
+	return OuterStyle.Render(lipgloss.JoinVertical(lipgloss.Left,
 		HeadingStyle.Render(Logo),
 		RenderStatusBar(m.serverConfig.container, m.activeModel),
-	)
-
-	return OuterStyle.Render(lipgloss.JoinVertical(lipgloss.Left,
-		header, "\n",
+		"\n",
 		m.activeModel.View(),
 	))
 }

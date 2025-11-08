@@ -19,9 +19,11 @@ var ColHeaderStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("#ffffff")).
 	Background(lipgloss.Color("99"))
 
-var TableTitleStyle = lipgloss.NewStyle().
+var PurpleBgStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("#ffffff")).
-	Background(lipgloss.Color("#5E5ED2")).
+	Background(lipgloss.Color("#5E5ED2"))
+
+var TableTitleStyle = PurpleBgStyle.
 	Padding(0, 1).Margin(0, 2)
 
 var ErrorTextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))

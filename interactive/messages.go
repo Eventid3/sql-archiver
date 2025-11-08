@@ -27,10 +27,15 @@ type bakFileSelectedMsg struct {
 	filename string
 }
 
+type BakFileInfo struct {
+	filename, mdfName, ldfName, mdfSize, mdfBackupSize, ldfSize string
+}
+
 type restoreBackupMsg struct {
-	filename, mdfName, ldfName string
+	fileInfo BakFileInfo
 }
 
 type restoreExecMsg struct {
-	filename, mdfName, ldfName, newDBName string
+	fileInfo  BakFileInfo
+	newDBName string
 }

@@ -3,6 +3,7 @@ package interactive
 import (
 	"github.com/Eventid3/sql-archiver/mssql"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type restoreExecModel struct {
@@ -10,8 +11,15 @@ type restoreExecModel struct {
 	infoString string
 }
 
-func NewRestoreExecModel(config ServerConfig, bakfile, dbName, mdf, ldf string) restoreExecModel {
-	query, err := mssql.RestoreDatabase(config.container, config.user, config.password, bakfile, dbName, mdf, ldf)
+func NewRestoreExecModel(config ServerConfig, bakFileInfo BakFileInfo, newDBName string) restoreExecModel {
+	query, err := mssql.RestoreDatabase(
+		config.container,
+		config.user,
+		config.password,
+		bakFileInfo.filename,
+		newDBName,
+		bakFileInfo.mdfName,
+		bakFileInfo.ldfName)
 	return restoreExecModel{err, query}
 }
 
@@ -35,5 +43,8 @@ func (m restoreExecModel) View() string {
 		return "Error during restore:\n\n" + m.err.Error() + "\n\nPress Enter to go back to action selection.\nInfo:\n" + m.infoString
 	}
 
-	return "Restore completed successfully!\n\nPress Enter to go back to action selection.\nInfo:\n" + m.infoString
+	return lipgloss.JoinVertical(lipgloss.Left,
+		"Restore completed successfully!",
+		"Press 'Enter' to go back to action selection",
+	)
 }
