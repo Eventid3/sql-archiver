@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // ------ WELCOME MODEL --------
@@ -54,7 +55,6 @@ func NewBackupModel(config ServerConfig) backupModel {
 	}
 }
 
-// Init implements tea.Model.
 func (m backupModel) Init() tea.Cmd {
 	return nil
 }
@@ -89,11 +89,12 @@ func (m backupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-// View implements tea.Model.
 func (m backupModel) View() string {
-	return TableTitleStyle.Render("Select a database to backup. Press esc to go back.") + "\n" +
-		BorderStyle.Render(m.table.View()) +
-		"\n" +
-		"Enter a filename (must end with '.bak'): " + m.filename.View() + "\n\n" +
-		m.help.FullHelpView(m.table.KeyMap.FullHelp())
+	return lipgloss.JoinVertical(lipgloss.Left,
+		TableTitleStyle.Render("Select a database to backup by pressiong 'Enter'. Press 'Esc' to go back."),
+		BorderStyle.Render(m.table.View()),
+		"Enter a filename (must end with '.bak'): "+m.filename.View(),
+		"\n",
+		m.help.FullHelpView(m.table.KeyMap.FullHelp()),
+	)
 }

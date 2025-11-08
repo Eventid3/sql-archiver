@@ -121,7 +121,6 @@ func (m *loginModel) updateInputs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-// View implements tea.Model.
 func (m loginModel) View() string {
 	result := fmt.Sprintf(
 		`Fill the form below:

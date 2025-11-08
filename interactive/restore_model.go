@@ -5,41 +5,42 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type restoreModel struct {
-	focusIndex                 int
-	inputs                     []textinput.Model
-	filename, mdfFile, ldfFile string
+	focusIndex int
+	inputs     []textinput.Model
+	// bakFileName string
+	bakFileInfo BakFileInfo
 }
 
-func NewRestoreModel(config ServerConfig, filename, mdf, ldf string) restoreModel {
+func NewRestoreModel(config ServerConfig, fileInfo BakFileInfo) restoreModel {
 	m := restoreModel{
-		focusIndex: 0,
-		inputs:     make([]textinput.Model, 1),
-		filename:   filename,
-		mdfFile:    mdf,
-		ldfFile:    ldf,
+		focusIndex:  0,
+		inputs:      make([]textinput.Model, 1),
+		bakFileInfo: fileInfo,
 	}
 
 	m.inputs[0] = textinput.New()
-	m.inputs[0].Placeholder = mdf
+	// m.inputs[0].Placeholder = mdf
 	m.inputs[0].Width = 50
+	m.inputs[0].SetValue(fileInfo.mdfName)
 	m.inputs[0].Focus()
 
 	return m
 }
 
 func (m restoreModel) Init() tea.Cmd {
-	return nil
+	return textinput.Blink
 }
 
 func (m restoreModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "esc":
-			return m, tea.Quit
+		case "esc":
+			return m, func() tea.Msg { return goToActionMsg{} }
 
 		// Set focus to next input
 		case "tab", "shift+tab", "enter", "up", "down":
@@ -49,9 +50,7 @@ func (m restoreModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s == "enter" && m.focusIndex == len(m.inputs)-1 {
 				return m, func() tea.Msg {
 					return restoreExecMsg{
-						m.filename,
-						m.mdfFile,
-						m.ldfFile,
+						m.bakFileInfo,
 						m.inputs[0].Value(),
 					}
 				}
@@ -76,14 +75,10 @@ func (m restoreModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if i == m.focusIndex {
 					// Set focused state
 					cmds[i] = m.inputs[i].Focus()
-					// fm.inputs[i].PromptStyle = focusedStyle
-					// fm.inputs[i].TextStyle = focusedStyle
 					continue
 				}
 				// Remove focused state
 				m.inputs[i].Blur()
-				// fm.inputs[i].PromptStyle = noStyle
-				// fm.inputs[i].TextStyle = noStyle
 			}
 
 			return m, tea.Batch(cmds...)
@@ -109,12 +104,26 @@ func (m *restoreModel) updateInputs(msg tea.Msg) tea.Cmd {
 }
 
 func (m restoreModel) View() string {
-	return fmt.Sprintf(
-		`
-New database name: %s
+	subHeader := TableTitleStyle.Render(fmt.Sprintf("Contents of backup file %s", m.bakFileInfo.filename))
 
-Press enter to confirm restore, Esc or ctrl+q to cancel.
-		`,
-		m.inputs[0].View(),
+	rowHeader := fmt.Sprintf("%s%s%s%s", ColHeaderStyle.Width(30).Render("Filename"), ColHeaderStyle.Width(10).Render("Type"), ColHeaderStyle.Width(15).Render("Size"), ColHeaderStyle.Width(15).Render("BackupSize"))
+	mdfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.mdfName, "MDF", m.bakFileInfo.mdfSize, m.bakFileInfo.mdfBackupSize)
+	ldfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.ldfName, "LDF", m.bakFileInfo.ldfSize, "-")
+
+	contents := BorderStyle.Render(
+		lipgloss.JoinVertical(lipgloss.Left,
+			rowHeader,
+			mdfLine,
+			ldfLine,
+		),
+	)
+
+	input := fmt.Sprintf("New database name: %s", m.inputs[0].View())
+
+	return lipgloss.JoinVertical(lipgloss.Left,
+		subHeader,
+		contents,
+		input,
+		"\nPress 'Enter' to confirm restore. Press 'Esc' to cancel.",
 	)
 }
