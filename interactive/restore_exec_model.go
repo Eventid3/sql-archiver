@@ -1,6 +1,7 @@
 package interactive
 
 import (
+	"github.com/Eventid3/sql-archiver/domain"
 	"github.com/Eventid3/sql-archiver/mssql"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -11,15 +12,15 @@ type restoreExecModel struct {
 	infoString string
 }
 
-func NewRestoreExecModel(config ServerConfig, bakFileInfo BakFileInfo, newDBName string) restoreExecModel {
+func NewRestoreExecModel(config ServerConfig, bakFileInfo domain.BackupEntry, newDBName string) restoreExecModel {
 	query, err := mssql.RestoreDatabase(
 		config.container,
 		config.user,
 		config.password,
-		bakFileInfo.filename,
+		bakFileInfo.Filename,
 		newDBName,
-		bakFileInfo.mdfName,
-		bakFileInfo.ldfName)
+		bakFileInfo.MdfFile.Name,
+		bakFileInfo.LdfFile.Name)
 	return restoreExecModel{err, query}
 }
 

@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+
+	"github.com/Eventid3/sql-archiver/domain"
 )
 
-func InspectBackupFile(container, user, password, file string) (BackupEntry, error) {
+func InspectBackupFile(container, user, password, file string) (domain.BackupEntry, error) {
 	if password == "" {
-		return BackupEntry{}, fmt.Errorf("SA password required. Use the -p command to set the pw")
+		return domain.BackupEntry{}, fmt.Errorf("SA password required. Use the -p command to set the pw")
 	}
 
 	if file == "" {
-		return BackupEntry{}, fmt.Errorf("filename must be provoded. Use the -f command to set the filename")
+		return domain.BackupEntry{}, fmt.Errorf("filename must be provoded. Use the -f command to set the filename")
 	}
 
 	if len(file) < 5 || file[len(file)-4:] != ".bak" {
-		return BackupEntry{}, fmt.Errorf("filename must be of type .bak")
+		return domain.BackupEntry{}, fmt.Errorf("filename must be of type .bak")
 	}
 
 	query := fmt.Sprintf("RESTORE FILELISTONLY FROM DISK = N'/var/opt/mssql/backup/%s'", file)
@@ -33,7 +35,7 @@ func InspectBackupFile(container, user, password, file string) (BackupEntry, err
 
 	output, err := dockerCmd.CombinedOutput()
 	if err != nil {
-		return BackupEntry{}, fmt.Errorf("error listing entries from .bak file: %w\nOutput: %s", err, output)
+		return domain.BackupEntry{}, fmt.Errorf("error listing entries from .bak file: %w\nOutput: %s", err, output)
 	}
 
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
@@ -45,7 +47,7 @@ func InspectBackupFile(container, user, password, file string) (BackupEntry, err
 	sizeCol := 4
 	backupSizeCol := 12
 
-	result := BackupEntry{}
+	result := domain.BackupEntry{}
 
 	for i, line := range lines {
 		if i == 0 {
@@ -66,13 +68,13 @@ func InspectBackupFile(container, user, password, file string) (BackupEntry, err
 		}
 		switch fields[typeCol] {
 		case "D":
-			result.MdfFile = MdfEntry{
+			result.MdfFile = domain.MdfEntry{
 				Name:       fields[logicalNameCol],
 				Size:       fields[sizeCol],
 				BackupSize: fields[backupSizeCol],
 			}
 		case "L":
-			result.LdfFile = LdfEntry{
+			result.LdfFile = domain.LdfEntry{
 				Name: fields[logicalNameCol],
 				Size: fields[sizeCol],
 			}

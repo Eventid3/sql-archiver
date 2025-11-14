@@ -3,6 +3,7 @@ package interactive
 import (
 	"fmt"
 
+	"github.com/Eventid3/sql-archiver/domain"
 	"github.com/Eventid3/sql-archiver/mssql"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -10,7 +11,7 @@ import (
 
 type inspectModel struct {
 	bakFileName string
-	bakFileInfo mssql.BackupEntry
+	bakFileInfo domain.BackupEntry
 	err         error
 }
 
@@ -35,13 +36,10 @@ func (m inspectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			return m, func() tea.Msg {
 				return restoreBackupMsg{
-					BakFileInfo{
-						m.bakFileName,
-						m.bakFileInfo.MdfFile.Name,
-						m.bakFileInfo.LdfFile.Name,
-						m.bakFileInfo.MdfFile.Size,
-						m.bakFileInfo.MdfFile.BackupSize,
-						m.bakFileInfo.LdfFile.Size,
+					domain.BackupEntry{
+						Filename: m.bakFileName,
+						MdfFile:  m.bakFileInfo.MdfFile,
+						LdfFile:  m.bakFileInfo.LdfFile,
 					},
 				}
 			}

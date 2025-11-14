@@ -1,7 +1,7 @@
 /*
-Package mssql defines data models for Microsoft SQL Server interactions.
+Package domain
 */
-package mssql
+package domain
 
 type DBItem struct {
 	Name, ID, Created, State string
@@ -12,8 +12,9 @@ type BakFile struct {
 }
 
 type BackupEntry struct {
-	MdfFile MdfEntry
-	LdfFile LdfEntry
+	Filename string
+	MdfFile  MdfEntry
+	LdfFile  LdfEntry
 }
 
 type MdfEntry struct {

@@ -1,5 +1,7 @@
 package interactive
 
+import "github.com/Eventid3/sql-archiver/domain"
+
 type nextStepMsg struct{}
 
 type loginFailedMsg struct {
@@ -27,15 +29,11 @@ type bakFileSelectedMsg struct {
 	filename string
 }
 
-type BakFileInfo struct {
-	filename, mdfName, ldfName, mdfSize, mdfBackupSize, ldfSize string
-}
-
 type restoreBackupMsg struct {
-	fileInfo BakFileInfo
+	fileInfo domain.BackupEntry
 }
 
 type restoreExecMsg struct {
-	fileInfo  BakFileInfo
+	fileInfo  domain.BackupEntry
 	newDBName string
 }

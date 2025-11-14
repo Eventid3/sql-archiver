@@ -79,12 +79,10 @@ func (m listFilesModel) View() string {
 		return fmt.Sprintf("error listing bak files: %v", m.err)
 	}
 
-	return TableTitleStyle.Render(
-		lipgloss.JoinVertical(lipgloss.Left,
-			"Select a file to restore from by pressing 'Enter'. Press 'Esc' to go back.",
-			BorderStyle.Render(m.table.View()),
-			"\n",
-			m.help.FullHelpView(m.table.KeyMap.FullHelp()),
-		),
+	return lipgloss.JoinVertical(lipgloss.Left,
+		TableTitleStyle.Render("Select a file to restore from by pressing 'Enter'. Press 'Esc' to go back."),
+		BorderStyle.Render(m.table.View()),
+		"\n",
+		m.help.FullHelpView(m.table.KeyMap.FullHelp()),
 	)
 }

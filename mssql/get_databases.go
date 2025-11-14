@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+
+	"github.com/Eventid3/sql-archiver/domain"
 )
 
-func GetDatabases(container, user, password string) ([]DBItem, error) {
+func GetDatabases(container, user, password string) ([]domain.DBItem, error) {
 	if user == "" {
 		return nil, fmt.Errorf("user required")
 	}
@@ -40,7 +42,7 @@ func GetDatabases(container, user, password string) ([]DBItem, error) {
 		return nil, fmt.Errorf("no databases found")
 	}
 
-	var result []DBItem
+	var result []domain.DBItem
 
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
@@ -61,7 +63,7 @@ func GetDatabases(container, user, password string) ([]DBItem, error) {
 				created = created[:10]
 			}
 
-			result = append(result, DBItem{name, id, created, state})
+			result = append(result, domain.DBItem{name, id, created, state})
 		}
 	}
 	return result, nil

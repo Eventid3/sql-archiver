@@ -1,3 +1,6 @@
+/*
+Package mssql
+*/
 package mssql
 
 import (

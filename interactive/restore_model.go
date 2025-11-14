@@ -3,6 +3,7 @@ package interactive
 import (
 	"fmt"
 
+	"github.com/Eventid3/sql-archiver/domain"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -12,10 +13,10 @@ type restoreModel struct {
 	focusIndex int
 	inputs     []textinput.Model
 	// bakFileName string
-	bakFileInfo BakFileInfo
+	bakFileInfo domain.BackupEntry
 }
 
-func NewRestoreModel(config ServerConfig, fileInfo BakFileInfo) restoreModel {
+func NewRestoreModel(config ServerConfig, fileInfo domain.BackupEntry) restoreModel {
 	m := restoreModel{
 		focusIndex:  0,
 		inputs:      make([]textinput.Model, 1),
@@ -25,7 +26,7 @@ func NewRestoreModel(config ServerConfig, fileInfo BakFileInfo) restoreModel {
 	m.inputs[0] = textinput.New()
 	// m.inputs[0].Placeholder = mdf
 	m.inputs[0].Width = 50
-	m.inputs[0].SetValue(fileInfo.mdfName)
+	m.inputs[0].SetValue(fileInfo.MdfFile.Name)
 	m.inputs[0].Focus()
 
 	return m
@@ -104,11 +105,11 @@ func (m *restoreModel) updateInputs(msg tea.Msg) tea.Cmd {
 }
 
 func (m restoreModel) View() string {
-	subHeader := TableTitleStyle.Render(fmt.Sprintf("Contents of backup file %s", m.bakFileInfo.filename))
+	subHeader := TableTitleStyle.Render(fmt.Sprintf("Contents of backup file %s", m.bakFileInfo.Filename))
 
 	rowHeader := fmt.Sprintf("%s%s%s%s", ColHeaderStyle.Width(30).Render("Filename"), ColHeaderStyle.Width(10).Render("Type"), ColHeaderStyle.Width(15).Render("Size"), ColHeaderStyle.Width(15).Render("BackupSize"))
-	mdfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.mdfName, "MDF", m.bakFileInfo.mdfSize, m.bakFileInfo.mdfBackupSize)
-	ldfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.ldfName, "LDF", m.bakFileInfo.ldfSize, "-")
+	mdfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.MdfFile.Name, "MDF", m.bakFileInfo.MdfFile.Size, m.bakFileInfo.MdfFile.BackupSize)
+	ldfLine := fmt.Sprintf("%-30s%-10s%-15s%-15s", m.bakFileInfo.LdfFile.Name, "LDF", m.bakFileInfo.LdfFile.Size, "-")
 
 	contents := BorderStyle.Render(
 		lipgloss.JoinVertical(lipgloss.Left,

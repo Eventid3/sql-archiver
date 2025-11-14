@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+
+	"github.com/Eventid3/sql-archiver/domain"
 )
 
-func ListBackupFilesInContainer(container, user, password string) ([]BakFile, error) {
+func ListBackupFilesInContainer(container, user, password string) ([]domain.BakFile, error) {
 	if password == "" {
 		return nil, fmt.Errorf("SA password required. Use the -p command to set the pw")
 	}
@@ -23,7 +25,7 @@ func ListBackupFilesInContainer(container, user, password string) ([]BakFile, er
 
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 
-	result := []BakFile{}
+	result := []domain.BakFile{}
 
 	if len(lines) == 0 {
 		return result, nil
@@ -49,7 +51,7 @@ func ListBackupFilesInContainer(container, user, password string) ([]BakFile, er
 			if len(fields) > 7 {
 				name = strings.Join(fields[6:], " ")
 			}
-			result = append(result, BakFile{
+			result = append(result, domain.BakFile{
 				Size: size,
 				Date: date,
 				Name: name,

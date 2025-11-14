@@ -5,19 +5,16 @@ Copyright © 2025 Esben Inglev <esbeninglev@gmail.com>
 package cmd
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/Eventid3/sql-archiver/interactive"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var (
-	container string
-	password  string
-	baseCmd   string = "/opt/mssql-tools18/bin/sqlcmd"
-
-	database string
-	file     string
-)
+var ignoreConfig bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -27,7 +24,38 @@ var rootCmd = &cobra.Command{
 	Restores and backups are done with .bak files.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		if ignoreConfig {
+			p := tea.NewProgram(interactive.InitialModel(), tea.WithAltScreen())
+			if _, err := p.Run(); err != nil {
+				fmt.Printf("Alas, there's been an error: %v", err)
+				os.Exit(1)
+			}
+		}
+
+		viper.SetConfigName("config")
+		viper.AddConfigPath("$HOME/.config/sql-archiver/")
+
+		err := viper.ReadInConfig()
+
+		if err != nil {
+			p := tea.NewProgram(interactive.InitialModel(), tea.WithAltScreen())
+			if _, err := p.Run(); err != nil {
+				fmt.Printf("Alas, there's been an error: %v", err)
+				os.Exit(1)
+			}
+		} else {
+			container := viper.GetString("container")
+			user := viper.GetString("user")
+			password := viper.GetString("password")
+
+			p := tea.NewProgram(interactive.InitialModelWithConfig(container, user, password), tea.WithAltScreen())
+			if _, err := p.Run(); err != nil {
+				fmt.Printf("Alas, there's been an error: %v", err)
+				os.Exit(1)
+			}
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -41,8 +69,5 @@ func Execute() {
 
 func init() {
 	// global flags
-	rootCmd.PersistentFlags().StringVarP(&container, "container", "c", "mssql", "Docker container name")
-	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Password for SA user")
-	rootCmd.PersistentFlags().StringVarP(&database, "database", "d", "", "Database name for restore or backup")
-	rootCmd.PersistentFlags().StringVarP(&file, "file", "f", "", "Filename to restore form or backup to")
+	rootCmd.PersistentFlags().BoolVarP(&ignoreConfig, "manual", "m", false, "Manual login page")
 }
