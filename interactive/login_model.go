@@ -62,8 +62,15 @@ func (m loginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return loginFailedMsg{err: err}
 					}
 
+					hostname := ""
+					if m.inputs[0].Value() == "" {
+						hostname = "localhost:1433"
+					} else {
+						hostname = m.inputs[0].Value()
+					}
+
 					return loginDoneMsg{
-						host:     m.inputs[0].Value(),
+						host:     hostname,
 						user:     m.inputs[1].Value(),
 						password: m.inputs[2].Value(),
 					}
