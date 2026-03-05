@@ -29,7 +29,7 @@ var Logo string = `
 SQL  ARCHIVER
 `
 
-func RenderStatusBar(container string, model tea.Model) string {
+func RenderStatusBar(host string, model tea.Model) string {
 	currentFlow := ""
 	switch model.(type) {
 	case backupModel, backupExecModel:
@@ -37,5 +37,5 @@ func RenderStatusBar(container string, model tea.Model) string {
 	case restoreModel, restoreExecModel, listFilesModel, inspectModel:
 		currentFlow = " > Restore"
 	}
-	return ColHeaderStyle.Padding(0, 1).Bold(true).Render("Container: " + container + currentFlow)
+	return ColHeaderStyle.Padding(0, 1).Bold(true).Render("Host: " + host + currentFlow)
 }

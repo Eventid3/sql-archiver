@@ -11,7 +11,7 @@ type backupExecModel struct {
 }
 
 func NewBackupExecModel(config ServerConfig, dbName, filename string) backupExecModel {
-	err := mssql.BackupDatabase(config.container, config.user, config.password, dbName, filename)
+	err := mssql.BackupDatabase(config.host, config.user, config.password, dbName, filename)
 
 	return backupExecModel{
 		err: err,

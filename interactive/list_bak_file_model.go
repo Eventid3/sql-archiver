@@ -17,7 +17,7 @@ type listFilesModel struct {
 }
 
 func NewListFilesModel(config ServerConfig) listFilesModel {
-	files, err := mssql.ListBackupFilesInContainer(config.container, config.user, config.password)
+	files, err := mssql.ListBackupFilesInContainer(config.host, config.user, config.password)
 	if err != nil {
 		return listFilesModel{
 			err: err,

@@ -1,62 +1,76 @@
 package mssql
 
 import (
+	"context"
 	"fmt"
-	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/Eventid3/sql-archiver/domain"
 )
 
-func ListBackupFilesInContainer(container, user, password string) ([]domain.BakFile, error) {
+func ListBackupFilesInContainer(host, user, password string) ([]domain.BakFile, error) {
 	if password == "" {
 		return nil, fmt.Errorf("SA password required. Use the -p command to set the pw")
 	}
 
-	dockerCmd := exec.Command(
-		"docker", "exec", "-i", container,
-		"ls", "-lhgG", "/var/opt/mssql/backup",
-	)
-
-	output, err := dockerCmd.CombinedOutput()
+	db, err := openDB(host, user, password)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list backup files: %w\nOutput: %s", err, string(output))
+		return nil, err
 	}
+	defer db.Close()
 
-	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-
-	result := []domain.BakFile{}
-
-	if len(lines) == 0 {
-		return result, nil
+	// sys.dm_os_enumerate_filesystem is available on SQL Server 2019+.
+	// It lists files with size and timestamp without requiring Docker exec.
+	rows, err := db.QueryContext(context.Background(), `
+		SELECT file_or_directory_name, size_in_bytes, last_write_time
+		FROM sys.dm_os_enumerate_filesystem('/var/opt/mssql/backup', '*')
+		WHERE is_directory = 0
+		  AND file_or_directory_name LIKE '%.bak'
+		ORDER BY last_write_time DESC
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list backup files: %w", err)
 	}
+	defer rows.Close()
 
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "total") {
+	var result []domain.BakFile
+	for rows.Next() {
+		var name string
+		var sizeBytes int64
+		var modTime time.Time
+
+		if err := rows.Scan(&name, &sizeBytes, &modTime); err != nil {
+			return nil, fmt.Errorf("failed to scan backup file row: %w", err)
+		}
+
+		// Only include .bak files (filter is already in SQL but double-check)
+		if !strings.HasSuffix(strings.ToLower(name), ".bak") {
 			continue
 		}
 
-		// Use Fields instead of Split to handle multiple spaces
-		fields := strings.Fields(line)
-
-		// ls -lhgG output format:
-		// [0] permissions, [1] links, [2] size, [3] month, [4] day, [5] time/year, [6] filename
-		if len(fields) >= 7 {
-			size := fields[2]
-			date := fmt.Sprintf("%s %s %s", fields[3], fields[4], fields[5])
-			name := fields[6]
-
-			// Handle filenames with spaces (join remaining fields)
-			if len(fields) > 7 {
-				name = strings.Join(fields[6:], " ")
-			}
-			result = append(result, domain.BakFile{
-				Size: size,
-				Date: date,
-				Name: name,
-			})
-		}
+		result = append(result, domain.BakFile{
+			Name: name,
+			Size: formatBytes(sizeBytes),
+			Date: modTime.Format("2006-01-02 15:04"),
+		})
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating backup file rows: %w", err)
+	}
+
 	return result, nil
+}
+
+func formatBytes(b int64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "KMGTPE"[exp])
 }

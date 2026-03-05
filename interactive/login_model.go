@@ -22,7 +22,7 @@ func NewLoginModel(err error) loginModel {
 		err:        err,
 	}
 	m.inputs[0] = textinput.New()
-	m.inputs[0].Placeholder = "container"
+	m.inputs[0].Placeholder = "localhost:1433"
 	m.inputs[0].Width = 50
 	m.inputs[0].Focus()
 
@@ -63,9 +63,9 @@ func (m loginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 
 					return loginDoneMsg{
-						container: m.inputs[0].Value(),
-						user:      m.inputs[1].Value(),
-						password:  m.inputs[2].Value(),
+						host:     m.inputs[0].Value(),
+						user:     m.inputs[1].Value(),
+						password: m.inputs[2].Value(),
 					}
 				}
 			}
@@ -89,14 +89,10 @@ func (m loginModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if i == m.focusIndex {
 					// Set focused state
 					cmds[i] = m.inputs[i].Focus()
-					// fm.inputs[i].PromptStyle = focusedStyle
-					// fm.inputs[i].TextStyle = focusedStyle
 					continue
 				}
 				// Remove focused state
 				m.inputs[i].Blur()
-				// fm.inputs[i].PromptStyle = noStyle
-				// fm.inputs[i].TextStyle = noStyle
 			}
 
 			return m, tea.Batch(cmds...)
@@ -125,7 +121,7 @@ func (m loginModel) View() string {
 	result := fmt.Sprintf(
 		`Fill the form below:
 
-Container: %s
+Host:      %s
 User:      %s
 Password:  %s
 

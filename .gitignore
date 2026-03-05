@@ -5,3 +5,10 @@
 
 # build file
 sql-archiver
+
+# bak files
+test-bak-files/
+
+# test coverage
+coverage.html
+coverage.out

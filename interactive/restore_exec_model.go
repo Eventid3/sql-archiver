@@ -14,7 +14,7 @@ type restoreExecModel struct {
 
 func NewRestoreExecModel(config ServerConfig, bakFileInfo domain.BackupEntry, newDBName string) restoreExecModel {
 	query, err := mssql.RestoreDatabase(
-		config.container,
+		config.host,
 		config.user,
 		config.password,
 		bakFileInfo.Filename,

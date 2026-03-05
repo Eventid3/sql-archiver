@@ -16,7 +16,7 @@ type inspectModel struct {
 }
 
 func NewInspectModel(config ServerConfig, bakFileName string) inspectModel {
-	fileInfo, err := mssql.InspectBackupFile(config.container, config.user, config.password, bakFileName)
+	fileInfo, err := mssql.InspectBackupFile(config.host, config.user, config.password, bakFileName)
 	return inspectModel{
 		bakFileName: bakFileName,
 		bakFileInfo: fileInfo,

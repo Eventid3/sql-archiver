@@ -1,14 +1,14 @@
 package mssql
 
 import (
+	"context"
 	"fmt"
-	"os/exec"
-	"strings"
+	"time"
 
 	"github.com/Eventid3/sql-archiver/domain"
 )
 
-func GetDatabases(container, user, password string) ([]domain.DBItem, error) {
+func GetDatabases(host, user, password string) ([]domain.DBItem, error) {
 	if user == "" {
 		return nil, fmt.Errorf("user required")
 	}
@@ -16,55 +16,41 @@ func GetDatabases(container, user, password string) ([]domain.DBItem, error) {
 		return nil, fmt.Errorf("password required")
 	}
 
-	query := "SELECT name, database_id, create_date, state_desc FROM sys.databases ORDER BY database_id"
-
-	dockerCmd := exec.Command(
-		"docker", "exec", "-i", container,
-		"/opt/mssql-tools18/bin/sqlcmd",
-		"-S", "localhost",
-		"-U", user,
-		"-P", password,
-		"-Q", query,
-		"-C",
-		"-h", "-1", // remove headers
-		"-s", "|",
-		"-W", // remove trailing whitespace
-	)
-
-	output, err := dockerCmd.CombinedOutput()
+	db, err := openDB(host, user, password)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list databases: %w\nOutput: %s", err, string(output))
+		return nil, err
 	}
+	defer db.Close()
 
-	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-
-	if len(lines) == 0 {
-		return nil, fmt.Errorf("no databases found")
+	rows, err := db.QueryContext(
+		context.Background(),
+		"SELECT name, database_id, create_date, state_desc FROM sys.databases ORDER BY database_id",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list databases: %w", err)
 	}
+	defer rows.Close()
 
 	var result []domain.DBItem
-
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-
-		if line == "" {
-			continue
+	for rows.Next() {
+		var name, state string
+		var id int
+		var created time.Time
+		if err := rows.Scan(&name, &id, &created, &state); err != nil {
+			return nil, fmt.Errorf("failed to scan database row: %w", err)
 		}
-
-		fields := strings.Split(line, "|")
-		if len(fields) >= 4 {
-			name := fields[0]
-			id := fields[1]
-			created := fields[2]
-			state := fields[3]
-
-			// only get date part
-			if len(created) > 10 {
-				created = created[:10]
-			}
-
-			result = append(result, domain.DBItem{name, id, created, state})
-		}
+		result = append(result, domain.DBItem{
+			Name:    name,
+			ID:      fmt.Sprintf("%d", id),
+			Created: created.Format("2006-01-02"),
+			State:   state,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating database rows: %w", err)
+	}
+	if len(result) == 0 {
+		return nil, fmt.Errorf("no databases found")
 	}
 	return result, nil
 }

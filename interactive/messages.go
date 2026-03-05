@@ -9,9 +9,9 @@ type loginFailedMsg struct {
 }
 
 type loginDoneMsg struct {
-	container string
-	user      string
-	password  string
+	host     string
+	user     string
+	password string
 }
 
 type actionSelectedMsg struct {

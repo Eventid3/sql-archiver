@@ -10,9 +10,9 @@ import (
 )
 
 type ServerConfig struct {
-	container string
-	user      string
-	password  string
+	host     string
+	user     string
+	password string
 }
 
 type parentModel struct {
@@ -27,14 +27,14 @@ func InitialModel() *parentModel {
 	}
 }
 
-func InitialModelWithConfig(container, user, password string) *parentModel {
+func InitialModelWithConfig(host, user, password string) *parentModel {
 	config := ServerConfig{
-		container,
+		host,
 		user,
 		password,
 	}
 
-	err := mssql.CheckConnection(container, user, password)
+	err := mssql.CheckConnection(host, user, password)
 	if err != nil {
 		return &parentModel{
 			activeModel: NewLoginModel(err),
@@ -63,7 +63,7 @@ func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.activeModel = NewLoginModel(msg.err)
 		return m, m.activeModel.Init()
 	case loginDoneMsg:
-		m.serverConfig.container = msg.container
+		m.serverConfig.host = msg.host
 		m.serverConfig.user = msg.user
 		m.serverConfig.password = msg.password
 		m.activeModel = NewActionModel()
@@ -104,7 +104,7 @@ func (m *parentModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *parentModel) View() string {
 	return OuterStyle.Render(lipgloss.JoinVertical(lipgloss.Left,
 		HeadingStyle.Render(Logo),
-		RenderStatusBar(m.serverConfig.container, m.activeModel),
+		RenderStatusBar(m.serverConfig.host, m.activeModel),
 		"\n",
 		m.activeModel.View(),
 	))

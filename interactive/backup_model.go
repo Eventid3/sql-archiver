@@ -25,7 +25,7 @@ func NewBackupModel(config ServerConfig) backupModel {
 		{Title: "State", Width: 15},
 	}
 
-	databases, err := mssql.GetDatabases(config.container, config.user, config.password)
+	databases, err := mssql.GetDatabases(config.host, config.user, config.password)
 	if err != nil {
 		return backupModel{err: err}
 	}

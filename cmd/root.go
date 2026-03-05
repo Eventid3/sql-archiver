@@ -19,11 +19,9 @@ var ignoreConfig bool
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "sql-archiver",
-	Short: "Tool to restore and backup MSSQL databases running in docker",
-	Long: `Tool to restore and backup MSSQL databases running in docker.
+	Short: "Tool to restore and backup MSSQL databases",
+	Long: `Tool to restore and backup MSSQL databases.
 	Restores and backups are done with .bak files.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		if ignoreConfig {
 			p := tea.NewProgram(interactive.InitialModel(), tea.WithAltScreen())
@@ -45,11 +43,11 @@ var rootCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		} else {
-			container := viper.GetString("container")
+			host := viper.GetString("host")
 			user := viper.GetString("user")
 			password := viper.GetString("password")
 
-			p := tea.NewProgram(interactive.InitialModelWithConfig(container, user, password), tea.WithAltScreen())
+			p := tea.NewProgram(interactive.InitialModelWithConfig(host, user, password), tea.WithAltScreen())
 			if _, err := p.Run(); err != nil {
 				fmt.Printf("Alas, there's been an error: %v", err)
 				os.Exit(1)
