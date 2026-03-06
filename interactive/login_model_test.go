@@ -92,23 +92,6 @@ func TestLoginModel_Picker_UpDoesNotGoNegative(t *testing.T) {
 	}
 }
 
-func TestLoginModel_Picker_EnterPrefillsFormAndShiftsFocus(t *testing.T) {
-	m := NewLoginModel(savedConns(), nil)
-	// pickerIndex=0 → "local" connection
-	newModel, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	lm := newModel.(loginModel)
-
-	if lm.focus != loginFocusForm {
-		t.Errorf("expected focus to shift to form after Enter; got %v", lm.focus)
-	}
-	if lm.inputs[0].Value() != "localhost:1433" {
-		t.Errorf("host not pre-filled: got %q, want %q", lm.inputs[0].Value(), "localhost:1433")
-	}
-	if lm.inputs[1].Value() != "sa" {
-		t.Errorf("user not pre-filled: got %q, want %q", lm.inputs[1].Value(), "sa")
-	}
-}
-
 func TestLoginModel_Picker_NKeyShiftsFocusToBlankForm(t *testing.T) {
 	m := NewLoginModel(savedConns(), nil)
 	// First pre-fill something so we can verify it gets cleared.
@@ -233,7 +216,9 @@ func TestLoginModel_Form_TabWrapsAround(t *testing.T) {
 func TestLoginModel_Form_EscReturnsToPicker(t *testing.T) {
 	m := NewLoginModel(savedConns(), nil)
 	// Navigate into form.
-	m2, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m2, _ := m.Update(tea.KeyMsg{Type: tea.KeyDown})
+	m2, _ = m2.Update(tea.KeyMsg{Type: tea.KeyDown})
+	m2, _ = m2.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	lm := m2.(loginModel)
 	if lm.focus != loginFocusForm {
 		t.Fatalf("expected form focus after Enter, got %v", lm.focus)
