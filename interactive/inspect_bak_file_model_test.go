@@ -102,3 +102,15 @@ func TestInspectModel_Update_EscEmitsGoToActionMsg(t *testing.T) {
 		t.Fatalf("expected goToActionMsg, got %T", msg)
 	}
 }
+
+func TestInspectModel_View_ErrorState(t *testing.T) {
+	m := inspectModel{
+		bakFileName: "broken.bak",
+		err:         &mockError{"access denied"},
+	}
+	view := m.View()
+
+	if !strings.Contains(view, "access denied") {
+		t.Errorf("inspect error view should contain error message; got:\n%s", view)
+	}
+}

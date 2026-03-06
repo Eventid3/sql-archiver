@@ -14,6 +14,28 @@ type loginDoneMsg struct {
 	password string
 }
 
+// promptSaveConnectionMsg is emitted after a successful login when the
+// connection is not already in the saved list. The user is asked to name and
+// save it before proceeding to the action screen.
+type promptSaveConnectionMsg struct {
+	host     string
+	user     string
+	password string
+}
+
+// connectionSavedMsg is emitted by saveConnectionModel after the connection
+// has been written to disk. The embedded loginDoneMsg carries the credentials
+// so parentModel can proceed to the action screen.
+type connectionSavedMsg struct {
+	host     string
+	user     string
+	password string
+}
+
+// connectionDeletedMsg is emitted after a saved connection has been removed
+// from disk. parentModel re-renders the login screen with the refreshed list.
+type connectionDeletedMsg struct{}
+
 type actionSelectedMsg struct {
 	action string
 }

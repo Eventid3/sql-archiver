@@ -40,3 +40,16 @@ func TestActionModel_Update_EnterEmitsActionSelectedMsg(t *testing.T) {
 		t.Errorf("unexpected action %q, want 'backup' or 'restore'", asMsg.action)
 	}
 }
+
+func TestActionModel_Update_EscQuitsApp(t *testing.T) {
+	m := NewActionModel()
+	escMsg := tea.KeyMsg{Type: tea.KeyEsc}
+	_, cmd := m.Update(escMsg)
+
+	if cmd == nil {
+		t.Fatal("expected a cmd from pressing Esc, got nil")
+	}
+	if _, ok := cmd().(tea.QuitMsg); !ok {
+		t.Errorf("expected tea.QuitMsg from Esc, got %T", cmd())
+	}
+}

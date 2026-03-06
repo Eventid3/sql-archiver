@@ -11,10 +11,7 @@ import (
 	"github.com/Eventid3/sql-archiver/interactive"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
-
-var ignoreConfig bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -23,35 +20,11 @@ var rootCmd = &cobra.Command{
 	Long: `Tool to restore and backup MSSQL databases.
 	Restores and backups are done with .bak files.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if ignoreConfig {
-			p := tea.NewProgram(interactive.InitialModel(), tea.WithAltScreen())
-			if _, err := p.Run(); err != nil {
-				fmt.Printf("Alas, there's been an error: %v", err)
-				os.Exit(1)
-			}
-		}
-
-		viper.SetConfigName("config")
-		viper.AddConfigPath("$HOME/.config/sql-archiver/")
-
-		err := viper.ReadInConfig()
-
-		if err != nil {
-			p := tea.NewProgram(interactive.InitialModel(), tea.WithAltScreen())
-			if _, err := p.Run(); err != nil {
-				fmt.Printf("Alas, there's been an error: %v", err)
-				os.Exit(1)
-			}
-		} else {
-			host := viper.GetString("host")
-			user := viper.GetString("user")
-			password := viper.GetString("password")
-
-			p := tea.NewProgram(interactive.InitialModelWithConfig(host, user, password), tea.WithAltScreen())
-			if _, err := p.Run(); err != nil {
-				fmt.Printf("Alas, there's been an error: %v", err)
-				os.Exit(1)
-			}
+		// InitialModel loads saved connections from disk automatically.
+		p := tea.NewProgram(interactive.InitialModel(), tea.WithAltScreen())
+		if _, err := p.Run(); err != nil {
+			fmt.Printf("Alas, there's been an error: %v", err)
+			os.Exit(1)
 		}
 	},
 }
@@ -63,9 +36,4 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
-}
-
-func init() {
-	// global flags
-	rootCmd.PersistentFlags().BoolVarP(&ignoreConfig, "manual", "m", false, "Manual login page")
 }
