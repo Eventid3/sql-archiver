@@ -162,8 +162,15 @@ func (m loginModel) handlePickerKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 		m.prefillForm(m.connections[m.pickerIndex])
-		cmd := m.shiftFocusToForm()
-		return m, cmd
+		host := m.inputs[0].Value()
+		user := m.inputs[1].Value()
+		password := m.inputs[2].Value()
+		return m, func() tea.Msg {
+			if err := mssql.CheckConnection(host, user, password); err != nil {
+				return loginFailedMsg{err: err}
+			}
+			return loginDoneMsg{host: host, user: user, password: password}
+		}
 
 	case "n":
 		m.clearForm()
@@ -180,7 +187,10 @@ func (m loginModel) handlePickerKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "esc":
 		return m, tea.Quit
 	}
-	return m, nil
+
+	// Handle character input and blinking
+	cmd := m.updateInputs(msg)
+	return m, cmd
 }
 
 // handleDeleteConfirm handles the y/N confirmation for deleting a connection.
@@ -261,7 +271,10 @@ func (m loginModel) handleFormKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		cmds[m.focusIndex] = m.inputs[m.focusIndex].Focus()
 		return m, tea.Batch(cmds...)
 	}
-	return m, nil
+
+	// Forward all other key events (character input) to the active text input.
+	cmd := m.updateInputs(msg)
+	return m, cmd
 }
 
 func (m *loginModel) updateInputs(msg tea.Msg) tea.Cmd {
